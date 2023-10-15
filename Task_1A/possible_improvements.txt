@@ -1,0 +1,6 @@
+use replace instead of label_encoder?
+for age,joining year use min max scaler
+can print debugging info from executable?
+select which featuresa are relavent 
+figure out a way to dynamically drop features which not present
+predict executable flow by printing check staements
