@@ -99,7 +99,36 @@ def detect_ArUco_details(image):
     ArUco_corners = {}
     
     ##############	ADD YOUR CODE HERE	##############
+    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
 
+    # Define the ArUco parameters
+    #arucoParameters = aruco.DetectorParameters_create()
+
+    # Detect ArUco markers in the grayscale image
+    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
+
+    # Define the ArUco parameters
+    arucoParameters = aruco.DetectorParameters()
+
+    # Detect ArUco markers in the grayscale image
+    corners, ids, rejectedImgPoints = aruco.detectMarkers(image, aruco_dict, parameters=arucoParameters)
+    #ids = list(map(int,ids))
+    for i in range(len(ids)):
+        marker_id = ids[i][0]  # ArUco marker IDs are returned as a list
+        corners_list = corners[i][0]  # Convert corners to a list
+
+        # Calculate the center coordinates
+        center_x = int((corners_list[0][0] + corners_list[2][0]) / 2)
+        center_y = int((corners_list[0][1] + corners_list[2][1]) / 2)
+
+        # Calculate the angle from the vertical
+        dx = corners_list[1][0] - corners_list[0][0]
+        dy = corners_list[1][1] - corners_list[0][1]
+        angle_degrees = np.degrees(np.arctan2(dy, dx))
+
+        ArUco_details_dict[marker_id] = [[center_x, center_y], int(angle_degrees)]
+
+        ArUco_corners[marker_id] = np.array(corners_list, dtype=float)
     ##################################################
     
     return ArUco_details_dict, ArUco_corners 
@@ -131,7 +160,7 @@ def mark_ArUco_image(image,ArUco_details_dict, ArUco_corners):
 if __name__ == "__main__":
 
     # path directory of images in test_images folder
-    img_dir_path = "public_test_cases/"
+    img_dir_path = "/home/vikrant/eyrc23-24/Task_2A/Task_2A_files/public_test_cases/"
 
     marker = 'aruco'
 
