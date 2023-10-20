@@ -106,14 +106,24 @@ def classify_event(image):
     predictions = model.predict(np.expand_dims(img, axis=0))
 
 
-    predicted_classes = np.argmax(predictions, axis=1)
+    x = np.argmax(predictions, axis=1)
 
-    class_mapping = {0: 'combat', 1: 'destroyedbuilding', 2: 'fire', 3: 'humanitarianaid', 4: 'militaryvehicles'}
+    # class_mapping = {0: 'combat', 1: 'destroyedbuilding', 2: 'fire', 3: 'humanitarianaid', 4: 'militaryvehicles'}
 
-    event = [class_mapping[prediction] for prediction in predicted_classes]
+    # event = [class_mapping[prediction] for prediction in predicted_classes]
+    if x == 0:
+        return combat
+    if x == 1:
+        return destroyed_building
+    if x == 2:
+        return  fire
+    if x == 3:
+        return rehab
+    else:
+        return military_vehicles   
 
 
-    return event
+
 
 # ADDITIONAL FUNCTIONS
 '''
@@ -201,3 +211,4 @@ if __name__ == "__main__":
         sys.exit()
 ###################################################################################################
 ###################################################################################################
+
