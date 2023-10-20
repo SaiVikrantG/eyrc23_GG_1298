@@ -108,7 +108,7 @@ def classify_event(image):
 
     predicted_classes = np.argmax(predictions, axis=1)
 
-    class_mapping = {0: 'combat', 1: 'destroyedbuilding', 2: 'Fire', 3: 'humanitarianaid', 4: 'militaryvehicles'}
+    class_mapping = {0: 'combat', 1: 'destroyedbuilding', 2: 'fire', 3: 'humanitarianaid', 4: 'militaryvehicles'}
 
     event = [class_mapping[prediction] for prediction in predicted_classes]
 
