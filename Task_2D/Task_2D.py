@@ -84,7 +84,7 @@ def tracker(ar_id, lat_lon):
     lat,lon = lat_lon[ar_id]
     coordinate = [lat,lon]
 
-    write_csv(coordinate,"live_location.csv")
+    write_csv(coordinate,"live_data.csv")
     
     # also return coordinate ([lat, lon]) associated with respective ar_id.
     return coordinate
