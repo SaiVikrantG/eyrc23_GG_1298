@@ -27,7 +27,6 @@ import csv
 import time
 
 # Additional Imports
-import pandas as pd
 
 # DECLARING VARIABLES (DO NOT CHANGE/REMOVE THESE VARIABLES)
 path1 = [11, 14, 13, 18, 19, 20, 23, 21, 22, 33, 30, 35, 32, 31, 34, 40, 36, 38, 37, 39, 41, 50, 4, 6, 52, 7, 8, 1, 2, 11]
@@ -48,14 +47,21 @@ def read_csv(csv_name):
     # store csv data in lat_lon dictionary as {id:[lat, lon].....}
     # return lat_lon
 
-    df = pd.read_csv(csv_name,names=['id','lat','lon'])
+    #lat_lon['id'] = ['lat','lon']
 
-    for i in range(1,df.shape[0]):
-        id,lat,lon = df.iloc[i]
-        lat_lon[int(id)] = [float(lat),float(lon)]
+    with open(csv_name, 'r', newline='') as csvfile:
+        reader = csv.reader(csvfile)
+        header = next(reader)  # Read the header row
 
-    lat_lon[df.iloc[0][0]] = [df.iloc[0][1],df.iloc[0][2]]
+        id, lat, lon = header  
+        lat_lon[id] = [lat, lon]
 
+        for row in reader:
+            id, lat, lon = row 
+            lat_lon[id] = [lat, lon]
+
+
+    #print(lat_lon)
     return lat_lon 
 
 def write_csv(loc, csv_name):
@@ -81,8 +87,8 @@ def tracker(ar_id, lat_lon):
     # find the lat, lon associated with ar_id (aruco id)
     # write these lat, lon to "live_data.csv"
 
-    lat,lon = lat_lon[ar_id]
-    coordinate = [lat,lon]
+    lat,lon = lat_lon[str(ar_id)]
+    coordinate = [float(lat),float(lon)]
 
     write_csv(coordinate,"live_data.csv")
     
