@@ -1,0 +1,17 @@
+Team ID = 
+Trained weights drive link = "https://drive.google.com/file/d/1fu3TM_oCIIehef_nWaxIgumaiQWaWs3b/view?usp=share_link"
+
+###############################################################################
+'''
+
+1. We tried creating our own CNN model at first, which wasnt giving much high of an accuracy, so we moved on to Transfer Learning.
+2. We had a couple of choices ResNet, VGG16, MobileNet. Im this particular model, we used MobileNet.
+3. The rest of the steps were pretty simple, first I seperated the data into train and val. Since we had 80 images for each class, I made a 70-10 split, just to test the waters. After that I preprocessed the data, using the basic data_preprocessing function.
+4. The input size is (224,224,3) for this model, but can be changed depending on the output we get.
+5. Finally, after compilation and making sure our model doesn't overfit, I saved it in "my_model_weights.h5"
+6. Then used that saved model to in the test file.
+7. for the image detection we first did thresholding for the values of the white rectangles 
+8. then we found the countours then approximated the contour to a shape 
+9. in order to seperate the unwanted shapes and countours we filtered it by the area of the contour which led us to getting the required events
+
+'''
