@@ -1,10 +1,21 @@
-/*  
- *   PID Line Follower
- *   Developer: Vinamr L. Sachdeva 
-*/
+#include <WiFi.h>
+#include <ArduinoJson.h>
+
 #define read_offset 2
 #define attach_offset 34
 long sensor[] = {0, 1, 2, 3, 4}; //leftmost - 0, rightmost - 4
+// WiFi credentials
+const char* ssid = "TPLINK-52";                    //Enter your wifi hotspot ssid
+const char* password =  "aditya20";               //Enter your wifi hotspot password
+const uint16_t port = 8002;
+const char * host = "192.168.0.106"; 
+StaticJsonDocument<200> jsonDocument;
+DeserializationError error;
+int P=0,I=0,D=0;
+
+char incomingPacket[80];
+WiFiClient client;
+String msg = "0";
 
 int rmf = 9;
 int rmb = 6;
@@ -34,6 +45,7 @@ float Kp = 5; // dummy
 float Ki = 0; //dummy
 float Kd = 40; //(Kp-1)*10
 
+void get_PID_consts();
 void pid_calc();
 void calc_turn();
 void motor_drive(int , int );
@@ -53,7 +65,17 @@ void setup()
   pinMode(lmf, OUTPUT);
   pinMode(lmb, OUTPUT);
 
-  Serial.begin(9600);
+  Serial.begin(115200);
+   //Connecting to wifi
+  WiFi.begin(ssid, password);
+
+  while (WiFi.status() != WL_CONNECTED) {
+    delay(500);
+    Serial.println("...");
+  }
+ 
+  Serial.print("WiFi connected with IP: ");
+  Serial.println(WiFi.localIP());
   
   //finding set point
 
@@ -84,11 +106,33 @@ void setup()
 }
 
 void loop()
-{
+{ 
+  get_PID_consts();
   pid_calc();
   calc_turn();
 }
+void get_PID_consts()
+{
+  msg = client.readStringUntil('\n');         //Read the message through the socket until new line char(\n)
+  Serial.println(msg);
+  error = deserializeJson(jsonDocument,msg);
+  if(error)
+  {
+    Serial.print("Failed to parse JSON: ");
+    Serial.println(error.c_str());
+  }
+  else 
+  {
+    P = jsonDocument["P"];
+    I = jsonDocument["I"];
+    D = jsonDocument["D"];
+    float Kp = P;
+    float Ki = I;
+    float Kd = D;
 
+  }
+
+}
 void pid_calc()
 {
   sensor_average = 0;
