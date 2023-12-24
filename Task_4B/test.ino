@@ -2,7 +2,8 @@
  *   PID Line Follower
  *   Developer: Vinamr L. Sachdeva 
 */
-
+#define read_offset 2
+#define attach_offset 34
 long sensor[] = {0, 1, 2, 3, 4}; //leftmost - 0, rightmost - 4
 
 int rmf = 9;
@@ -63,9 +64,9 @@ void setup()
   
     for (int i = -2; i <= 2; i++)
     {
-      sensor[i] = digitalRead(i);
-      sensor_average += sensor[i] * i * 1000;   //weighted mean   
-      sensor_sum += int(sensor[i]);
+      sensor[i+read_offset] = digitalRead(i+attach_offset);
+      sensor_average += sensor[i+read_offset] * i * 1000;   //weighted mean   
+      sensor_sum += int(sensor[i+read_offset]);
     }
   
     pos = int(sensor_average / sensor_sum);
@@ -99,9 +100,9 @@ void pid_calc()
     // sensor[i]=analogRead(i);
     // sensor_average = sensor[i]*i*1000; //weighted mean
     // sensor_sum += sensor[i];
-    sensor[i]=digitalRead(i);
-    sensor_average = sensor[i]*i*1000; //weighted mean **may need to change 1000*
-    sensor_sum += sensor[i];
+    sensor[i+read_offset]=digitalRead(i+attach_offset);
+    sensor_average = sensor[i+read_offset]*i*1000; //weighted mean **may need to change 1000*
+    sensor_sum += sensor[i+read_offset];
   }
 
   pos = int(sensor_average / sensor_sum);
