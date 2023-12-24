@@ -10,7 +10,7 @@ const char* password =  "aditya20";               //Enter your wifi hotspot pass
 const uint16_t port = 8002;
 const char * host = "192.168.0.106"; 
 StaticJsonDocument<200> jsonDocument;
-DeserializationError error;
+DeserializationError j_error;
 int P=0,I=0,D=0;
 
 char incomingPacket[80];
@@ -53,11 +53,11 @@ void motor_drive(int , int );
 void setup()
 {
   //sensors
-  pinMode(A0, INPUT);
-  pinMode(A1, INPUT);
-  pinMode(A2, INPUT);
-  pinMode(A3, INPUT);
-  pinMode(A4, INPUT);
+  pinMode(1, INPUT);
+  pinMode(2, INPUT);
+  pinMode(3, INPUT);
+  pinMode(4, INPUT);
+  pinMode(5, INPUT);
 
   //motors
   pinMode(rmf, OUTPUT);
@@ -115,11 +115,11 @@ void get_PID_consts()
 {
   msg = client.readStringUntil('\n');         //Read the message through the socket until new line char(\n)
   Serial.println(msg);
-  error = deserializeJson(jsonDocument,msg);
-  if(error)
+  j_error = deserializeJson(jsonDocument,msg);
+  if(j_error)
   {
     Serial.print("Failed to parse JSON: ");
-    Serial.println(error.c_str());
+    Serial.println(j_error.c_str());
   }
   else 
   {
