@@ -80,12 +80,12 @@ void setup()
               ki = request->arg("ki").toFloat();
               kp = request->arg("kp").toFloat();
               kd = request->arg("kd").toFloat();
-              Serial.print("Updated Constants - Ki: ");
-              Serial.print(ki);
-              Serial.print(", Kp: ");
-              Serial.print(kp);
-              Serial.print(", Kd: ");
-              Serial.println(kd);
+              // Serial.print("Updated Constants - Ki: ");
+              // Serial.print(ki);
+              // Serial.print(", Kp: ");
+              // Serial.print(kp);
+              // Serial.print(", Kd: ");
+              // Serial.println(kd);
               request->send(200, "text/plain", "Constants updated successfully");
             });
 
@@ -93,4 +93,11 @@ void setup()
   server.begin();
 }
 
-void loop() {}
+void loop() 
+{
+    Serial.print(ki);
+    Serial.print(", Kp: ");
+    Serial.print(kp);
+    Serial.print(", Kd: ");
+    Serial.println(kd);
+}
