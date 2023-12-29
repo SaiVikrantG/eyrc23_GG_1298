@@ -30,7 +30,7 @@ send_button = tk.Button(root, text="Send Values", command=send_values)
 send_button.pack()
 
 # Socket communication code (to be implemented according to your needs)
-ip = "192.168.0.106"  # Enter IP address
+ip = "192.168.0.101"  # Enter IP address
 port = 8002
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
