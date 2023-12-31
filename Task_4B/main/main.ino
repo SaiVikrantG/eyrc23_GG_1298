@@ -7,10 +7,10 @@
 
 long sensor[] = {0, 1, 2}; //leftmost - 0, rightmost - 4
 // WiFi credentials
-const char* ssid = "Nope";                    //Enter your wifi hotspot ssid
-const char* password =  "pi314420";               //Enter your wifi hotspot password
-const uint16_t port = 8002;
-const char * host = "192.168.0.101"; 
+const char* ssid = "TP-Link_BBF8";                    //Enter your wifi hotspot ssid
+const char* password =  "51121921";               //Enter your wifi hotspot password
+// const uint16_t port = 8002;
+// const char * host = "192.168.0.101"; 
 AsyncWebServer server(80);
 
 
@@ -58,7 +58,7 @@ void setup()
   pinMode(22, INPUT);
   pinMode(23, INPUT);
   pinMode(32, INPUT);
-  pinMode(1, INPUT);
+  pinMode(19, INPUT);
 
   //motors
   pinMode(rmf, OUTPUT);
@@ -145,31 +145,31 @@ void loop()
 
 void pid_calc()
 {
-  Serial.println("correction");
+  // Serial.println("correction");
   sensor_average = 0;
   sensor_sum = 0;
   i = 0;
 
-  for(int i = -2; i <= 2; i++)
+  for(int i = 1; i <= 3; i++)
   {
-    // sensor[i]=analogRead(i);
-    // sensor_average = sensor[i]*i*1000; //weighted mean
-    // sensor_sum += sensor[i];
-    sensor[i+read_offset]=!digitalRead(i+attach_offset);
-    sensor_average = sensor[i+read_offset]*i*15; //weighted mean **may need to change me1000*
-    sensor_sum += sensor[i+read_offset];
+
+    sensor[i]=!digitalRead(i+attach_offset-1);
+    sensor_average = sensor[i]*i*15; //weighted mean **may need to change me1000*
+    sensor_sum += sensor[i];
   }
-  sensor_sum += !digitalRead(32)*(-2)+!digitalRead(1)*(2);
+  sensor_average += (-2)*(!digitalRead(32))+!digitalRead(1)*(2);
+  sensor_sum += !digitalRead(32)+!digitalRead(19);
   pos = int(sensor_average / sensor_sum);
+
 
   error = pos-sp;
   Serial.print("ki");
   Serial.println(ki);
-  Serial.print("Error:");
-  Serial.println(error);
+  // Serial.print("Error:");
+  // Serial.println(error);
   
-  Serial.print("pos");
-  Serial.println(pos);
+  // Serial.print("pos");
+  // Serial.println(pos);
   delay(500);
   p = error;
   i += p;
@@ -197,7 +197,7 @@ void calc_turn()
     
   if (lspeed < -255) 
     lspeed = -255;
-  Serial.println("calc_turn");
+  // Serial.println("calc_turn");
  motor_drive(rspeed,lspeed);  
 }
 
