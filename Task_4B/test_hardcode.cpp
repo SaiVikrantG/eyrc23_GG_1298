@@ -1,6 +1,9 @@
 #define read_offset 1
 #define attach_offset 21
 
+#define right_delay 0
+#define left_delay 0
+
 // blob count
 int count = 0;
 
@@ -223,7 +226,7 @@ void turnLeft() {
     digitalWrite(lmb, LOW);
     digitalWrite(rmf, HIGH);
     digitalWrite(rmb, LOW );
-    // delay(left_delay);
+    delay(left_delay);
     // analogWrite(enl, 0);
     // digitalWrite(lmf, LOW);
     // digitalWrite(lmb, LOW);
@@ -237,7 +240,7 @@ void turnRight() {
     digitalWrite(rmb, LOW);
     digitalWrite(lmf, HIGH);
     digitalWrite(lmb, LOW);
-    // delay(right_delay);
+    delay(right_delay);
     // analogWrite(enr, 0);
     // digitalWrite(rmf, LOW);
     // digitalWrite(rmb, LOW);
