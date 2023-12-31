@@ -35,7 +35,7 @@ float d;
 float lp;
 float error;
 float correction;
-float sp=0.866;
+float sp=12.99;//*****************************************************
 
 float kp = 0.0;
 float ki = 0.0;
@@ -81,9 +81,9 @@ void setup()
 server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
     String html = "<html><body>";
     html += "<h1>PID Tuning</h1>";
-    html += "ki: <input type='range' id='ki' min='0' max='100' step='0.1' value='" + String(ki) + "'><span id='ki_value'>" + String(ki) + "</span><br>";
-    html += "kp: <input type='range' id='kp' min='0' max='100' step='0.1' value='" + String(kp) + "'><span id='kp_value'>" + String(kp) + "</span><br>";
-    html += "kd: <input type='range' id='kd' min='0' max='100' step='0.1' value='" + String(kd) + "'><span id='kd_value'>" + String(kd) + "</span><br>";
+    html += "ki: <input type='range' id='ki' min='0' max='10' step='0.1' value='" + String(ki) + "'><span id='ki_value'>" + String(ki) + "</span><br>";
+    html += "kp: <input type='range' id='kp' min='0' max='10' step='0.1' value='" + String(kp) + "'><span id='kp_value'>" + String(kp) + "</span><br>";
+    html += "kd: <input type='range' id='kd' min='0' max='10' step='0.1' value='" + String(kd) + "'><span id='kd_value'>" + String(kd) + "</span><br>";
     html += "Start: <button onclick='startStop()'>Start</button><br>";
     html += "<script>";
     html += "function updateConstants() {";
@@ -177,14 +177,19 @@ void pid_calc()
   p = error;
   j += p;
   d = p - lp;
-  Serial.print("ki: ");
-  Serial.println(ki);
-  Serial.print("kp: ");
-  Serial.println(kp);
-  Serial.print("kd: ");
-  Serial.println(kd);
+  
+
+  // Serial.print("ki: ");
+  // Serial.println(ki);
+  // Serial.print("kp: ");
+  // Serial.println(kp);
+  // Serial.print("kd: ");
+  // Serial.println(kd);
   lp = p;
   correction = int(kp * p + ki * j + kd * d);
+  Serial.print("correction: ");
+  Serial.println(correction);
+  delay(500);
 }
 
 void calc_turn()
