@@ -35,17 +35,13 @@ float d;
 float lp;
 float error;
 float correction;
-float sp=2;
+float sp=0.866;
 
-float kp = 5;     // dummy
-float ki = 15;    // dummy
-float kd = 40;    //(Kp-1)*10
-float maxki = 2.0;
-float maxKp = 2.0;
-float maxKd = 2.0;
+float kp = 0.0;
+float ki = 0.0;
+float kd = 0.0;
+int startSignal = 0;
 
-bool updateEnabled = true; // Flag to control real-time updates
-bool start = 1;        // Flag to control whether to start or stop the updates
 
 void get_PID_consts();
 void pid_calc();
@@ -82,97 +78,45 @@ void setup()
   Serial.print("WiFi connected with IP: ");
   Serial.println(WiFi.localIP());
 
-  server.on("/", HTTP_GET, [](AsyncWebServerRequest *request)
-            {
-              String html = "<html><body>";
-              html += "<h1>PID Tuning</h1>";
-              html += "Ki: <input type='range' id='ki' min='0' max='" + String(maxki) + "' step='0.1' value='" + String(ki) + "'><span id='ki_value'>" + String(ki) + "</span><br>";
-              html += "Kp: <input type='range' id='kp' min='0' max='" + String(maxKp) + "' step='0.1' value='" + String(kp) + "'><span id='kp_value'>" + String(kp) + "</span><br>";
-              html += "Kd: <input type='range' id='kd' min='0' max='" + String(maxKd) + "' step='0.1' value='" + String(kd) + "'><span id='kd_value'>" + String(kd) + "</span><br>";
-              html += "Max Ki: <input type='number' id='maxki' value='" + String(maxki) + "'><br>";
-              html += "Max Kp: <input type='number' id='maxKp' value='" + String(maxKp) + "'><br>";
-              html += "Max Kd: <input type='number' id='maxKd' value='" + String(maxKd) + "'><br>";
-              html += "<button id='startButton' onclick='toggleStart()'>Start/Stop</button>";
-              html += "<span id='startStatus'>" + String(start ? "Started" : "Stopped") + "</span><br>";
-              html += "<button id='stopButton' onclick='toggleUpdate()'>Toggle Update</button>";
-              html += "<span id='updateStatus'>" + String(updateEnabled ? "Enabled" : "Disabled") + "</span><br>";
-              html += "<div id='valuesContainer'></div>";
-              html += "<script>";
-              html += "function updateConstants() {";
-              html += "  var ki = document.getElementById('ki').value;";
-              html += "  var kp = document.getElementById('kp').value;";
-              html += "  var kd = document.getElementById('kd').value;";
-              html += "  fetch('/update', { method: 'POST', body: 'ki=' + ki + '&kp=' + kp + '&kd=' + kd })";
-              html += "}";
-              html += "function updateDisplay() {";
-              html += "  document.getElementById('ki_value').innerText = document.getElementById('ki').value;";
-              html += "  document.getElementById('kp_value').innerText = document.getElementById('kp').value;";
-              html += "  document.getElementById('kd_value').innerText = document.getElementById('kd').value;";
-              html += "}";
-              html += "function updateMaxLimits() {";
-              html += "  maxki = parseFloat(document.getElementById('maxki').value);";
-              html += "  maxKp = parseFloat(document.getElementById('maxKp').value);";
-              html += "  maxKd = parseFloat(document.getElementById('maxKd').value);";
-              html += "  document.getElementById('ki').max = maxki;";
-              html += "  document.getElementById('kp').max = maxKp;";
-              html += "  document.getElementById('kd').max = maxKd;";
-              html += "  updateDisplay();";
-              html += "}";
-              html += "function toggleStart() {";
-              html += "  fetch('/toggleStart', { method: 'POST' })";
-              html += "}";
-              html += "function toggleUpdate() {";
-              html += "  updateEnabled = !updateEnabled;";
-              html += "  document.getElementById('updateStatus').innerText = updateEnabled ? 'Enabled' : 'Disabled';";
-              html += "}";
-              html += "function updateValues() {";
-              html += "  fetch('/getValues')";
-              html += "    .then(response => response.text())";
-              html += "    .then(data => {";
-              html += "      const valuesContainer = document.getElementById('valuesContainer');";
-              html += "      const values = data.split(',');";
-              html += "      valuesContainer.innerHTML = '<p>Right: ' + values[0] + '</p><p>Left: ' + values[1] + '</p>';";
-              html += "    });";
-              html += "}";
-              html += "setInterval(updateValues, 1000);"; // Update values every second
-              html += "document.getElementById('ki').addEventListener('input', function() { if(updateEnabled) { updateConstants(); updateDisplay(); } });";
-              html += "document.getElementById('kp').addEventListener('input', function() { if(updateEnabled) { updateConstants(); updateDisplay(); } });";
-              html += "document.getElementById('kd').addEventListener('input', function() { if(updateEnabled) { updateConstants(); updateDisplay(); } });";
-              html += "document.getElementById('maxki').addEventListener('input', updateMaxLimits);";
-              html += "document.getElementById('maxKp').addEventListener('input', updateMaxLimits);";
-              html += "document.getElementById('maxKd').addEventListener('input', updateMaxLimits);";
-              html += "</script>";
-              html += "</body></html>";
-              request->send(200, "text/html", html);
-            });
+server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+    String html = "<html><body>";
+    html += "<h1>PID Tuning</h1>";
+    html += "ki: <input type='range' id='ki' min='0' max='100' step='0.1' value='" + String(ki) + "'><span id='ki_value'>" + String(ki) + "</span><br>";
+    html += "kp: <input type='range' id='kp' min='0' max='100' step='0.1' value='" + String(kp) + "'><span id='kp_value'>" + String(kp) + "</span><br>";
+    html += "kd: <input type='range' id='kd' min='0' max='100' step='0.1' value='" + String(kd) + "'><span id='kd_value'>" + String(kd) + "</span><br>";
+    html += "Start: <button onclick='startStop()'>Start</button><br>";
+    html += "<script>";
+    html += "function updateConstants() {";
+    html += "  var kiValue = document.getElementById('ki').value;";
+    html += "  var kpValue = document.getElementById('kp').value;";
+    html += "  var kdValue = document.getElementById('kd').value;";
+    html += "  fetch('/update?ki=' + kiValue + '&kp=' + kpValue + '&kd=' + kdValue, { method: 'POST' })";
+    html += "}";
+    html += "function updateDisplay(sliderId, valueId) {";
+    html += "  document.getElementById(valueId).innerText = document.getElementById(sliderId).value;";
+    html += "}";
+    html += "function startStop() {";
+    html += "  fetch('/start', { method: 'POST' })";
+    html += "}";
+    html += "document.getElementById('ki').addEventListener('input', function() { updateConstants(); updateDisplay('ki', 'ki_value'); });";
+    html += "document.getElementById('kp').addEventListener('input', function() { updateConstants(); updateDisplay('kp', 'kp_value'); });";
+    html += "document.getElementById('kd').addEventListener('input', function() { updateConstants(); updateDisplay('kd', 'kd_value'); });";
+    html += "</script>";
+    html += "</body></html>";
+    request->send(200, "text/html", html);
+  });
 
-  // Define route for updating PID constants
-  server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request)
-            {
-              ki = request->arg("ki").toFloat();
-              kp = request->arg("kp").toFloat();
-              kd = request->arg("kd").toFloat();
-              maxki = request->arg("maxki").toFloat();
-              maxKp = request->arg("maxKp").toFloat();
-              maxKd = request->arg("maxKd").toFloat();
-              
-              request->send(200, "text/plain", "Constants updated successfully");
-            });
+  server.on("/update", HTTP_POST, [](AsyncWebServerRequest *request) {
+    ki = request->arg("ki").toFloat();
+    kp = request->arg("kp").toFloat();
+    kd = request->arg("kd").toFloat();
+    request->send(200, "text/plain", "Constants and Start signal updated successfully");
+  });
 
-  // Define route for toggling start
-  // server.on("/toggleStart", HTTP_POST, [](AsyncWebServerRequest *request)
-  //           {
-  //             start = !start;
-  //             Serial.println(start);
-  //             request->send(200, "text/plain", "Start toggled successfully");
-  //           });
-
-  // Define route for getting motor values
-  // server.on("/getValues", HTTP_GET, [](AsyncWebServerRequest *request)
-  //           {
-  //             String values = String(rspeed) + "," + String(lspeed);
-  //             request->send(200, "text/plain", values);
-  //           });
+  server.on("/start", HTTP_POST, [](AsyncWebServerRequest *request) {
+    startSignal = !startSignal;  // Toggle start signal
+    request->send(200, "text/plain", "Start signal toggled");
+  });
 
   // Start server
   server.begin();
@@ -182,7 +126,7 @@ void setup()
 
 void loop()
 {
-  if (start)
+  if (startSignal)
   {
     pid_calc();
     calc_turn();
