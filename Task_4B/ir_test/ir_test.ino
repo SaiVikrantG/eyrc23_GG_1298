@@ -1,7 +1,18 @@
 # define attach_offset 22
 # define read_offset 1
-# define weighted_mean 1000
+# define weighted_mean 15
 float sensor_average,sensor_sum;
+float kp = 4.0;
+float ki = 0.0;
+float kd = 0.3;
+float p;
+float i;
+float d;
+float lp;
+// float j ;
+float error;
+float correction;
+float sp =0.0;
 int pos,sensor[5];
 void setup(){
   Serial.begin(115200);
@@ -12,7 +23,7 @@ void setup(){
   pinMode(19, INPUT);
 }
 void loop(){
-    
+    int j =0;
     sensor_average = 0;
     sensor_sum = 0;
 
@@ -32,6 +43,16 @@ void loop(){
         Serial.println(sensor_sum);
         Serial.print("Position: ");
         Serial.println(pos);
+        error = pos - sp;
+        p = error;
+        j += p;
+        d = p - lp;
+        lp = p;
+        correction = int(kp * p + ki * j + kd * d);
+        Serial.print("error: ");
+        Serial.println(error);
+        Serial.print("correction: ");
+        Serial.println(correction);
     }
       
     else

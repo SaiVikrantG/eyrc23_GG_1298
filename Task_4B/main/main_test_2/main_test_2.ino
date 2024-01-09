@@ -57,7 +57,7 @@
     pinMode(21, INPUT);
     pinMode(22, INPUT);
     pinMode(23, INPUT);
-    pinMode(32, INPUT);
+    pinMode(34, INPUT);
     pinMode(19, INPUT);
 
     // motors
@@ -150,54 +150,45 @@
 
   void pid_calc()
   {
+    int j =0;
     sensor_average = 0;
     sensor_sum = 0;
-    int j = 0;
 
-    // for (int i = 1; i <= 3; i++)
+    // for (int i = -1; i <= 1; i++)
     // {
-    //   sensor[i + read_offset] = !digitalRead(i + attach_offset);
-    //   sensor_average = sensor[i + read_offset] * i * 15;
-    //   sensor_sum += sensor[i + read_offset];
+    // sensor[i+read_offset] = !digitalRead(i+attach_offset);
+    // sensor_average += sensor[i+read_offset] * i * weighted_mean;   //weighted mean   
+    // sensor_sum += int(sensor[i+read_offset]);
     // }
-    sensor_average += (-2) * (!digitalRead(32)) + !digitalRead(1) * (2);
-    
-    for (int i = 1; i <= 3; i++)
-    {
-      sensor[i] = !digitalRead(i+attach_offset-1);
-      sensor_average = sensor[i] * i * 15;
-      sensor_sum += sensor[i];
-    }
-    sensor_average += ((4) * (!digitalRead(32))) + (!digitalRead(19) * (5));
-    sensor_sum += !digitalRead(32) + !digitalRead(19);
-    
-    if (sensor_sum)
-      pos = int(sensor_average / sensor_sum);
-    else
-      stop();
-    error = pos - sp;
-    p = error;
-    j += p;
-    d = p - lp;
-    
-
-    // Serial.print("ki: ");
-    // Serial.println(ki);
-    // Serial.print("kp: ");
-    // Serial.println(kp);
-    // Serial.print("kd: ");
-    // Serial.println(kd);
-    lp = p;
-    correction = int(kp * p + ki * j + kd * d);
-    Serial.print("correction: ");
-    Serial.println(correction);
+    sensor_average = (!digitalRead(19)*(-2)+!digitalRead(21)*(-1)+!digitalRead(22)*(0)+!digitalRead(23)*(1)+!digitalRead(34)*(2))*weighted_mean;
+    sensor_sum = (!digitalRead(19)+!digitalRead(21)+!digitalRead(22)+!digitalRead(23)+!digitalRead(34));
+    if(sensor_sum){
+        pos = int(sensor_average / sensor_sum);
+        Serial.print("Sensor Average: ");
+        Serial.println(sensor_average);
+        Serial.print("Sensor Sum: ");
+        Serial.println(sensor_sum);
+        Serial.print("Position: ");
+        Serial.println(pos);
+        error = pos - sp;
+        p = error;
+        j += p;
+        d = p - lp;
+        lp = p;
+        correction = int(kp * p + ki * j + kd * d);
+        Serial.print("error: ");
+        Serial.println(error);
+        Serial.print("correction: ");
+        Serial.println(correction);
+    else 
+        stop();
     delay(500);
   }
-
+  }
   void calc_turn()
   {
-    rspeed = base_speed + correction;
-    lspeed = base_speed - correction;
+    rspeed = base_speed - correction;
+    lspeed = base_speed + correction;
 
     if (rspeed > 255)
       rspeed = 255;
