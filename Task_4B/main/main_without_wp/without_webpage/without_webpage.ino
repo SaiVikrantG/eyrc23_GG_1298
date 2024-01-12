@@ -27,8 +27,6 @@ float d;
 float lp;
 float error;
 float correction;
-****************************************************
-
 float kp = 0.0;
 float ki = 0.0;
 float kd = 0.0;

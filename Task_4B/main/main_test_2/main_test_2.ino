@@ -4,6 +4,7 @@
 
   #define read_offset 1
   #define attach_offset 21
+  #define weighted_mean 10
 
   long sensor[] = {0, 1, 2}; // leftmost - 0, rightmost - 4
   // WiFi credentials
@@ -35,7 +36,7 @@
   float lp;
   float error;
   float correction;
-  float sp=48.5;//*****************************************************
+  float sp=0;//*****************************************************
   // float sp=30;//*****************************************************
 
   float kp = 0.0;
@@ -65,6 +66,9 @@
     pinMode(rmb, OUTPUT);
     pinMode(lmf, OUTPUT);
     pinMode(lmb, OUTPUT);
+    pinMode(enl, OUTPUT);
+    pinMode(enr, OUTPUT);
+
 
     Serial.begin(115200);
     // Connecting to wifi
@@ -160,7 +164,7 @@
     // sensor_average += sensor[i+read_offset] * i * weighted_mean;   //weighted mean   
     // sensor_sum += int(sensor[i+read_offset]);
     // }
-    sensor_average = (!digitalRead(19)*(-2)+!digitalRead(21)*(-1)+!digitalRead(22)*(0)+!digitalRead(23)*(1)+!digitalRead(34)*(2))*weighted_mean;
+    sensor_average = (!digitalRead(19)*(-1)+!digitalRead(21)*(-2)+!digitalRead(22)*(0)+!digitalRead(23)*(2)+!digitalRead(34)*(1))*weighted_mean;
     sensor_sum = (!digitalRead(19)+!digitalRead(21)+!digitalRead(22)+!digitalRead(23)+!digitalRead(34));
     if(sensor_sum){
         pos = int(sensor_average / sensor_sum);
@@ -180,11 +184,12 @@
         Serial.println(error);
         Serial.print("correction: ");
         Serial.println(correction);
+    }
     else 
         stop();
     delay(500);
   }
-  }
+  
   void calc_turn()
   {
     rspeed = base_speed - correction;
@@ -203,6 +208,10 @@
       lspeed = -255;
 
     motor_drive(rspeed, lspeed);
+    Serial.print("right: ");
+    Serial.println(rspeed);
+    Serial.print("left: ");
+    Serial.println(lspeed);
   }
 
   void motor_drive(int right, int left)
