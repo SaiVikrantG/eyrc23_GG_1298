@@ -34,7 +34,7 @@ void loop()
     int rightIRSensorValue = digitalRead(IR_SENSOR_TOP_RIGHT);
     int leftIRSensorValue = digitalRead(IR_SENSOR_TOP_LEFT);
 
-    if(rightIRSensorValue && leftIRSensorValue){
+    if(!rightIRSensorValue && !leftIRSensorValue){
     stop();
     delay(2000);
     if(count <= 11){
