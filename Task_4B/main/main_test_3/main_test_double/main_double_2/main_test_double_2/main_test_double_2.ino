@@ -31,62 +31,55 @@ void setup()
     pinMode(IR_CENTRE, INPUT);
     rotateMotor(0,0);   
 }
-
+/*
+ RR: rotateMotor(-MOTOR_SPEED,MOTOR_SPEED);
+ RL: rotateMotor(MOTOR_SPEED,-MOTOR_SPEED);
+ STOP: rotateMOtor(0,0);
+*/
 
 void loop()
 {
 
   delay(10);//sampling  time 
-  int toprightIRSensorValue = digitalRead(IR_SENSOR_TOP_RIGHT);
-  int topleftIRSensorValue = digitalRead(IR_SENSOR_TOP_LEFT);
-  int bottomrightIRSensorValue = digitalRead(IR_SENSOR_BOTTOM_RIGHT);
-  int bottomleftIRSensorValue = digitalRead(IR_SENSOR_BOTTOM_LEFT);
-  int centre_ir_value = digitalRead(IR_CENTRE);
+  int toprightIRSensorValue =! digitalRead(IR_SENSOR_TOP_RIGHT);
+  int topleftIRSensorValue = !digitalRead(IR_SENSOR_TOP_LEFT);
+  int bottomrightIRSensorValue =! digitalRead(IR_SENSOR_BOTTOM_RIGHT);
+  int bottomleftIRSensorValue = !digitalRead(IR_SENSOR_BOTTOM_LEFT);
+  int centre_ir_value = !digitalRead(IR_CENTRE);
+  int combinedValue = (bottomleftIRSensorValue << 3) | (topleftIRSensorValue << 2) | (toprightIRSensorValue << 1) | bottomrightIRSensorValue;
+  Serial.println(combinedValue);
+  switch(combinedValue){
+    case 5:
+    case 7:
+    case 13:
+            rotateMotor(-MOTOR_SPEED,MOTOR_SPEED);
+            break;
+    case 10:
+    case 11:
+    case 14:
+            rotateMotor(MOTOR_SPEED,-MOTOR_SPEED);
+            break;
+    case 6:
+    case 15:
+            rotateMotor(MOTOR_SPEED, MOTOR_SPEED);
+            break;
+    // case 0:
+    // case 1:
+    // case 2:
+    // case 3:
+    // case 4:
+    // case 8:
+    // case 9:
+    // case 12:
+    default:
+            rotateMotor(0, 0);
+            break;
+      
+    
 
-    //If none of the sensors detects black line, then go straight
-  // if (bottomrightIRSensorValue == LOW && bottomleftIRSensorValue == LOW)
-  // {
-  //   Serial.println("check1");
-  //   rotateMotor(MOTOR_SPEED, MOTOR_SPEED-SPEED_OFFSET);
-  // }
-  //If right sensor detects black line, then turn right
-  // else if (bottomrightIRSensorValue == HIGH && bottomleftIRSensorValue == LOW )
-  // {
-  //     Serial.println("check2");
-  //     rotateMotor(MOTOR_SPEED, -MOTOR_SPEED); 
-  // }
-  // //If left sensor detects black line, then turn left  
-  // else if (bottomrightIRSensorValue == LOW && bottomleftIRSensorValue == HIGH )
-  // {
-  //     Serial.println("check1");
-  //     rotateMotor(-MOTOR_SPEED, MOTOR_SPEED); 
-  // } 
-  //If none of the sensors detects black line, then go straight
+  }
 
-  //If right sensor detects black line, then turn right
-  if ((toprightIRSensorValue == HIGH && topleftIRSensorValue )== LOW ||(bottomrightIRSensorValue == LOW && bottomleftIRSensorValue == HIGH) )
-  {
-      Serial.println("check2");
-      rotateMotor(-MOTOR_SPEED, MOTOR_SPEED); 
-      delay(500);//sampling  time 
-  }
-  //If left sensor detects black line, then turn left  
-  else if ((bottomrightIRSensorValue == HIGH && bottomleftIRSensorValue == LOW) ||(toprightIRSensorValue == LOW && topleftIRSensorValue == HIGH) )
-  {
-      Serial.println("check1");
-      rotateMotor(MOTOR_SPEED,- MOTOR_SPEED);
-      delay(500);//sampling  time  
-  } 
-  //If both the sensors detect black line, then stop 
-  else if ((toprightIRSensorValue == LOW && topleftIRSensorValue == LOW) && (bottomrightIRSensorValue == LOW && bottomleftIRSensorValue == LOW))
-  {
-    rotateMotor(MOTOR_SPEED, MOTOR_SPEED-SPEED_OFFSET);
-    delay(500);//sampling  time
-  } 
-  else 
-  {
-    rotateMotor(0, 0);
-  }
+
 }
 
 
