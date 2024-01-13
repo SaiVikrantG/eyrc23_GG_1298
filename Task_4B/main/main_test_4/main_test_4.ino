@@ -4,6 +4,9 @@
 #define IR_SENSOR_BOTTOM_LEFT 19
 #define IR_CENTRE 22
 #define MOTOR_SPEED 255
+#define right_delay 1500
+#define left_delay 1500
+
 
 int rmf = 5;
 int rmb = 15;
@@ -23,18 +26,21 @@ void setup()
     pinMode(enl, OUTPUT);
     pinMode(enr, OUTPUT);
 
-    pinMode(IR_SENSOR_RIGHT, INPUT);
-    pinMode(IR_SENSOR_LEFT, INPUT);
-    rotateMotor(0,0);   
+    pinMode(IR_SENSOR_TOP_RIGHT, INPUT);
+    pinMode(IR_SENSOR_TOP_LEFT, INPUT);
+    pinMode(IR_SENSOR_BOTTOM_RIGHT, INPUT);
+    pinMode(IR_SENSOR_BOTTOM_LEFT, INPUT);
+    pinMode(IR_CENTRE, INPUT);
+    rotateMotor(0,0); 
 }
 
 
 void loop()
 {
-    int rightIRSensorValue = digitalRead(IR_SENSOR_TOP_RIGHT);
-    int leftIRSensorValue = digitalRead(IR_SENSOR_TOP_LEFT);
+     topRightIRSensorValue = digitalRead(IR_SENSOR_TOP_RIGHT);
+     topLeftIRSensorValue = digitalRead(IR_SENSOR_TOP_LEFT);
 
-    if(!rightIRSensorValue && !leftIRSensorValue){
+    if(!topRightIRSensorValue && !topLeftIRSensorValue){
     stop();
     delay(2000);
     if(count <= 11){
@@ -78,19 +84,19 @@ void forward_single_l(){
   delay(10);
 
   //If none of the sensors detects black line, then go straight
-  if (rightIRSensorValue == LOW && leftIRSensorValue == LOW)
+  if (topRightIRSensorValue == LOW && topLeftIRSensorValue == LOW)
   {
     Serial.println("check1");
     rotateMotor(MOTOR_SPEED, MOTOR_SPEED);
   }
   //If right sensor detects black line, then turn right
-  else if (rightIRSensorValue == HIGH && leftIRSensorValue == LOW )
+  else if (topRightIRSensorValue == HIGH && topLeftIRSensorValue == LOW )
   {
       Serial.println("check2");
       rotateMotor(-MOTOR_SPEED, MOTOR_SPEED); 
   }
   //If left sensor detects black line, then turn left  
-  else if (rightIRSensorValue == LOW && leftIRSensorValue == HIGH )
+  else if (topLeftIRSensorValue == LOW && topLeftIRSensorValue == HIGH )
   {
       Serial.println("check1");
       rotateMotor(MOTOR_SPEED, -MOTOR_SPEED); 
