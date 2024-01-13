@@ -78,6 +78,9 @@ void loop()
     }
     } 
 }
+void forward(){
+  rotateMotor(MOTOR_SPEED,MOTOR_SPEED-3);
+}
 void forward_single_l(){
 //   int rightIRSensorValue = digitalRead(IR_SENSOR_RIGHT);
 //   int leftIRSensorValue = digitalRead(IR_SENSOR_LEFT);

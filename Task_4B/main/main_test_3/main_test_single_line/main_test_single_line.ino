@@ -1,6 +1,8 @@
 #define IR_SENSOR_RIGHT 21
 #define IR_SENSOR_LEFT 23
 #define MOTOR_SPEED 255
+#define RIGHT_SPEED_OFFSET 3
+#define LEFT_SPEED_OFFSET 1
 
 int rmf = 5;
 int rmb = 15;
@@ -36,7 +38,7 @@ void loop()
   if (rightIRSensorValue == LOW && leftIRSensorValue == LOW)
   {
     Serial.println("check1");
-    rotateMotor(MOTOR_SPEED, MOTOR_SPEED);
+    rotateMotor(MOTOR_SPEED-LEFT_SPEED_OFFSET, MOTOR_SPEED-RIGHT_SPEED_OFFSET);
   }
   //If right sensor detects black line, then turn right
   else if (rightIRSensorValue == HIGH && leftIRSensorValue == LOW )
@@ -90,3 +92,8 @@ void rotateMotor(int right, int left)
                 digitalWrite(lmb, HIGH);
             }
     }
+
+
+
+
+
