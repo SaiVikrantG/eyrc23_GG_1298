@@ -51,11 +51,14 @@ void loop()
   switch(combinedValue){
     case 5:
     case 7:
-    case 13:
+    // case 13:
+    case 11:
+            //rotate right
             rotateMotor(-MOTOR_SPEED,MOTOR_SPEED);
             break;
     case 10:
-    case 11:
+    // case 11:
+    case 13:
     case 14:
             rotateMotor(MOTOR_SPEED,-MOTOR_SPEED);
             break;
