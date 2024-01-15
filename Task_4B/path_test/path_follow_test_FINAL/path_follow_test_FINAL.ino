@@ -1,3 +1,5 @@
+#define LED_PIN 12
+#define BUZZER_PIN 12
 #define IR_SENSOR_TOP_RIGHT 21
 #define IR_SENSOR_TOP_LEFT 23
 #define IR_SENSOR_BOTTOM_RIGHT 19
@@ -29,12 +31,22 @@ void setup()
     pinMode(lmb, OUTPUT);
     pinMode(enl, OUTPUT);
     pinMode(enr, OUTPUT);
+    pinMode(LED_PIN, OUTPUT);
+    pinMode(BUZZER_PIN, OUTPUT);
 
     pinMode(IR_SENSOR_TOP_RIGHT, INPUT);
     pinMode(IR_SENSOR_TOP_LEFT, INPUT);
     pinMode(IR_SENSOR_BOTTOM_RIGHT, INPUT);
     pinMode(IR_SENSOR_BOTTOM_LEFT, INPUT);
     pinMode(IR_CENTRE, INPUT);
+    digitalWrite(LED_PIN,HIGH);
+    digitalWrite(BUZZER_PIN,HIGH);
+    //make the LED and BUZZER ON FOR 1 SEC
+    digitalWrite(LED_PIN,LOW);
+    digitalWrite(BUZZER_PIN,LOW);
+    delay(1000);
+    digitalWrite(LED_PIN,HIGH);
+    digitalWrite(BUZZER_PIN,HIGH);
     rotateMotor(0,0);   
 }
 /*
@@ -96,12 +108,21 @@ void loop()
                       case 1:
                       case 2:
                       case 9:
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
                           delay(delay_forward);
                           break;
                       case 7:
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
+
                           rotateMotor(-MOTOR_SPEED,MOTOR_SPEED);
                           delay(50);
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
@@ -113,7 +134,12 @@ void loop()
                       case 6:
                       case 8:
                           //Turn Right
-                          delay(2000);
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
+                          delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
+
                           rotateMotor(MOTOR_SPEED,0);
                           delay(delay_correction); 
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
@@ -125,7 +151,12 @@ void loop()
                           break;
 
                       case 4:
-                          delay(2000);
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
+                          delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
+
                           rotateMotor(MOTOR_SPEED,0);
                           delay(delay_correction); 
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
@@ -138,7 +169,12 @@ void loop()
 
                       case 10:
                           //Turn Left
-                          delay(2000);
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
+                          delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
+
                           rotateMotor(MOTOR_SPEED,0);
                           delay(delay_correction); 
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
@@ -150,17 +186,17 @@ void loop()
 
                       case 11:
                           rotateMotor(0, 0);
-                          Serial.println("just going");
+                          digitalWrite(LED_PIN,LOW);
+                          digitalWrite(BUZZER_PIN,LOW);
+                          delay(1000);
+                          digitalWrite(LED_PIN,HIGH);
+                          digitalWrite(BUZZER_PIN,HIGH);
                           break;
 
                       default: 
                           break;
                   }
-              }
-            else{
-              count = 0;
-            }
-          // } 
+              } 
                     break;
       
     
