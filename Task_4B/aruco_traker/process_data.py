@@ -29,7 +29,9 @@ def process_csv(file_path):
 # Example usage
 csv_file_path = '/home/pradhyumna/hardware_round/lat_long.csv'
 processed_data_dict = process_csv(csv_file_path)
-print(processed_data_dict[24])
+# print(processed_data_dict)
+lat, lon = processed_data_dict[23]
+print(lat)
 
 # Access the processed data (a dictionary of dictionaries)
 # for ar_id, values in processed_data_dict.items():
