@@ -1,5 +1,5 @@
-#define LED_PIN 12
-#define BUZZER_PIN 12
+#define LED_PIN 32
+#define BUZZER_PIN 33
 #define IR_SENSOR_TOP_RIGHT 21
 #define IR_SENSOR_TOP_LEFT 23
 #define IR_SENSOR_BOTTOM_RIGHT 19
