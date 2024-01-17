@@ -108,19 +108,19 @@ void loop()
                       case 1:
                       case 2:
                       case 9:
-                          digitalWrite(LED_PIN,LOW);
+                          // digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
-                          digitalWrite(LED_PIN,HIGH);
+                          // digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
                           rotateMotor(MOTOR_SPEED,MOTOR_SPEED);
                           delay(delay_forward);
                           break;
                       case 7:
-                          digitalWrite(LED_PIN,LOW);
+                          // digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
-                          digitalWrite(LED_PIN,HIGH);
+                          // digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
 
                           rotateMotor(-MOTOR_SPEED,MOTOR_SPEED);
@@ -134,10 +134,10 @@ void loop()
                       case 6:
                       case 8:
                           //Turn Right
-                          digitalWrite(LED_PIN,LOW);
+                          // digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
-                          digitalWrite(LED_PIN,HIGH);
+                          // digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
 
                           rotateMotor(MOTOR_SPEED,0);
@@ -151,10 +151,10 @@ void loop()
                           break;
 
                       case 4:
-                          digitalWrite(LED_PIN,LOW);
+                          // digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
-                          digitalWrite(LED_PIN,HIGH);
+                          // digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
 
                           rotateMotor(MOTOR_SPEED,0);
@@ -169,10 +169,10 @@ void loop()
 
                       case 10:
                           //Turn Left
-                          digitalWrite(LED_PIN,LOW);
+                          // digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
                           delay(1000);
-                          digitalWrite(LED_PIN,HIGH);
+                          // digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
 
                           rotateMotor(MOTOR_SPEED,0);
@@ -188,7 +188,7 @@ void loop()
                           rotateMotor(0, 0);
                           digitalWrite(LED_PIN,LOW);
                           digitalWrite(BUZZER_PIN,LOW);
-                          delay(1000);
+                          delay(5000);
                           digitalWrite(LED_PIN,HIGH);
                           digitalWrite(BUZZER_PIN,HIGH);
                           break;
