@@ -1,5 +1,6 @@
 import cv2
 import numpy as np
+import time
 
 # Function to calculate Euclidean distance
 def calculate_distance(marker1, marker2):
@@ -14,11 +15,9 @@ cap = cv2.VideoCapture(0)
 # Example detection loop (adapt based on your actual implementation)
 frame_counter = 0  # Counter to track frames
 
-# Variables to store real-time information about the nearest ArUco marker
-nearest_marker_id = None
-nearest_marker_position = None
-nearest_marker_distance = float('inf')  # Initialize with infinity
-x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
+# Variables to store real-time information about marker 70 and the nearest ArUco marker
+marker_70_position = None
+last_recorded_nearest_marker = None
 
 while True:
     # Capture frame from camera
@@ -29,6 +28,10 @@ while True:
 
     # Check if any markers are detected
     if ids is not None:
+        nearest_marker_id = None
+        nearest_marker_position = None
+        nearest_marker_distance = float('inf')  # Initialize with infinity
+
         for i in range(len(ids)):
             marker_id = ids[i][0]
             marker_corners = corners[i][0]
@@ -36,13 +39,13 @@ while True:
             # Assuming each marker is a square, calculate its center
             marker_center = np.mean(marker_corners, axis=0).astype(int)
 
-            # If the detected marker is the moving marker (ID 70), update its initial position
-            if marker_id == 70 and x70 is None and y70 is None:
-                x70, y70 = marker_center
+            # If the detected marker is the moving marker (ID 70), update its position
+            if marker_id == 70:
+                marker_70_position = marker_center
 
-            # Calculate distance to the moving marker (ID 70) if x70 and y70 are not None
-            if x70 is not None and y70 is not None and marker_id != 70:
-                distance_to_marker_70 = calculate_distance(marker_center, (x70, y70))
+            # Calculate distance to marker 70 if its position is known
+            if marker_70_position is not None and marker_id != 70:
+                distance_to_marker_70 = calculate_distance(marker_center, marker_70_position)
 
                 # Update real-time information about the nearest ArUco marker
                 if distance_to_marker_70 < nearest_marker_distance:
@@ -50,16 +53,22 @@ while True:
                     nearest_marker_position = marker_center
                     nearest_marker_distance = distance_to_marker_70
 
-        # Use the last known position of marker 70 as its current position
-        current_position = (x70, y70)
+        # Use the real-time position of marker 70 as its current position
+        current_position = marker_70_position
 
-        # Calculate distance to the moving marker (ID 70) for the nearest marker
-        if x70 is not None and y70 is not None:
-            nearest_marker_to_70_distance = calculate_distance(nearest_marker_position, current_position)
+        # Calculate distance to the nearest marker for marker 70
+        if marker_70_position is not None and nearest_marker_position is not None:
+            distance_to_nearest_marker = calculate_distance(nearest_marker_position, current_position)
 
-            # Do something with the real-time information about the nearest ArUco marker
-            print(f"Nearest ArUco marker is ID {nearest_marker_id} at position {nearest_marker_position} "
-                  f"with distance to moving marker (ID 70): {nearest_marker_to_70_distance}")
+            # Check if the nearest marker has changed
+            if nearest_marker_id != last_recorded_nearest_marker:
+                # Record the new nearest marker
+                last_recorded_nearest_marker = nearest_marker_id
+
+                # Do something with the real-time information about marker 70 and the nearest ArUco marker
+                print(f"Marker 70 at position {marker_70_position}, "
+                      f"Nearest ArUco marker is ID {nearest_marker_id} at position {nearest_marker_position} "
+                      f"with distance to marker 70: {distance_to_nearest_marker}")
 
         # Draw detected markers on the image (optional)
         cv2.aruco.drawDetectedMarkers(frame, corners, ids)
@@ -69,6 +78,9 @@ while True:
 
     # Increment frame counter
     frame_counter += 1
+
+    # Add a delay of 500 milliseconds for computations
+    time.sleep(0.5)
 
     # Check for key press
     key = cv2.waitKey(1) & 0xFF
