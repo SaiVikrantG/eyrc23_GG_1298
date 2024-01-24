@@ -12,9 +12,9 @@ cap = cv2.VideoCapture(2)
 frame_counter = 0  # Counter to track frames
 
 # Variables to store real-time information about the nearest ArUco marker
-nearest_marker_id = None
-nearest_marker_position = None
-nearest_marker_distance = float('inf')  # Initialize with infinity
+# nearest_marker_id = None
+# nearest_marker_position = None
+# nearest_marker_distance = float('inf')  # Initialize with infinity
 x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
 aruco_pos = {}
 
