@@ -43,7 +43,7 @@ def detect_aruco_corner_coordinates(image_path, corner_index=0):
 # Replace 'your_image.jpg' with the new path to your image
 image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample2.jpg'
 
-# Replace 'corner_index' with the index of the corner you want to print (0 to 3)
+# Replace 'corner_index' with the index of the corner you dwant to print (0 to 3)
 corner_index = 0
 
 detect_aruco_corner_coordinates(image_path, corner_index)
