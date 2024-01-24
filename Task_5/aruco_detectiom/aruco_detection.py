@@ -28,6 +28,8 @@ def detect_aruco_corner_coordinates(image_path, corner_index=0):
                 # Draw the corner coordinates on the image
                 cv2.putText(image_with_markers, f"({int(x)}, {int(y)})", (int(x), int(y)),
                             cv2.FONT_HERSHEY_SIMPLEX, 0.5, (0, 255, 0), 2, cv2.LINE_AA)
+                # Print the coordinates on the console
+                print(f"ArUco ID {ids[i][0]} - Corner {corner_index+1}: ({int(x)}, {int(y)})")
             else:
                 print(f"ArUco ID {ids[i][0]} does not have corner {corner_index+1}.")
 
