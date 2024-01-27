@@ -160,7 +160,7 @@ def mark_ArUco_image(image,ArUco_details_dict, ArUco_corners):
 if __name__ == "__main__":
 
     # path directory of images in test_images folder
-    img_dir_path = "/home/vikrant/eyrc23-24/Task_2A/Task_2A_files/public_test_cases/"
+    img_dir_path = "/home/pradhyumna/hardware_round/eyrc23_GG_1298/Task_2A/Task_2A_files/public_test_cases/"
 
     marker = 'aruco'
 

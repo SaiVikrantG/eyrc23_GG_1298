@@ -25,6 +25,8 @@ def calc_angle(coord1, coord2):
         div = (y2-y1)/(x2-x1)
     return np.degrees(np.arctan(div))
 
+def calc_orientation()
+
 while True:
     # Capture frame from camera
     ret, frame = cap.read()
@@ -46,6 +48,11 @@ while True:
             # If the detected marker is the moving marker (ID 70), update its initial position
             if marker_id == 70 and x70 is None and y70 is None:
                 x70, y70 = marker_center
+                # l_top, l_bottom = ()
+                # marker_corners = corners[i][0]
+                dx = marker_corners[1][0] - marker_corners[0][0]
+                dy = marker_corners[1][1] - marker_corners[0][1]
+                angle_degrees = np.degrees(np.arctan2(dy, dx))
 
             # Calculate distance to the moving marker (ID 70) if x70 and y70 are not None
             if x70 is not None and y70 is not None and marker_id != 70:
