@@ -33,13 +33,15 @@ def signal(direction: str):
     elif direction=="straight":
         print("straight")
 
-image = cv2.imread('/home/pradhyumna/hardware_round/eyrc23_GG_1298/Task_5A/test5.png')
+image = cv2.imread('/home/pradhyumna/hardware_round/eyrc23_GG_1298/Task_5A/test3.png')
 
 corners, ids, _ = aruco.detectMarkers(image, aruco_dict)
 # print(ids)
 # for i in ids:
 #     print(i[0])
 
+# while(True):
+#     time.sleep(1)
 if ids is not None:
         for i in range(len(ids)):
             print(len(ids))
@@ -116,11 +118,12 @@ if ids is not None:
                         elif dx<0:
                             signal("right")
 
-                if agl==2 or agl==3:
+                if agl==2:
+                    
                     signal("straight")
 
-                # if agl==3:
-                #     signal("straight")
+                if agl==3:
+                    signal("straight")
 
 
                     # if dy>0:
