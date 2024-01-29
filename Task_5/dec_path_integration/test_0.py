@@ -1,7 +1,58 @@
+import cv2
+import cv2.aruco as aruco
+import numpy as np
+import time
 import heapq
 import math
 import matplotlib.pyplot as plt
-###########################FUNCTIONS########################
+#############################CORNER DECTECTION FUNCTION ################
+def detect_aruco_corner_coordinates(image_path, corner_index=0):
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Convert the image to grayscale
+    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Define the ArUco dictionary
+    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
+
+    # Define parameters for ArUco detection
+    parameters = aruco.DetectorParameters_create()
+
+    # Detect ArUco markers in the image
+    corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
+
+    # Initialize a dictionary to store corner coordinates
+    corner_coordinates = {}
+
+    # Print the coordinates of the specified corner for each detected ArUco marker
+    if ids is not None:
+        for i in range(len(ids)): 
+            if len(corners[i][0]) > corner_index:  # Check if the specified corner exists
+                x, y = corners[i][0][corner_index]
+                corner_coordinates[ids[i][0]] = (int(x), int(y))
+            else:
+                print(f"ArUco ID {ids[i][0]} does not have corner {corner_index+1}.")
+    else:
+        print("No ArUco markers detected.")
+    
+    return corner_coordinates
+
+###########################BOT DECISION FUNCTIONS########################
+def calc_angle(coord1, coord2):
+    x2,y2 = coord1
+    x1,y1 = coord2
+    # if (x2-x1)!=0 :
+    return np.degrees(np.arctan((y2-y1)/(x2-x1))), (y2-y1), (x2-x1)
+
+def signal(direction: str):
+    if direction=="right":
+        print("right turn")
+    elif direction=="left":
+        print("left turn")
+    elif direction=="straight":
+        print("straight")
+###########################SHORTEST PATH DUNCTIONS############
 def calc_cen(coord1, coord2, xconstant, yconstant):
     # Calculate center point
     center_x = (coord1[0] + coord2[0]) / 2 + xconstant
@@ -115,24 +166,35 @@ def visualize_points_with_walls(aruco_corners, wall_lines, path=None):
     plt.grid(True)
     plt.show()
 
-ac = {6: (1018, 666), 7: (399, 639), 16: (903, 586), 15: (975, 585), 17: (844, 583), 18: (774, 580), 19: (708, 578), 20: (647, 576), 21: (595, 576), 23: (429, 546), 14: (994, 535), 24: (433, 505), 13: (997, 491), 22: (434, 466), 29: (911, 460), 25: (513, 457), 28: (766, 455), 26: (580, 454), 27: (650, 451), 11: (996, 395), 9: (994, 355), 30: (907, 339), 49: (430, 333), 31: (795, 332), 32: (751, 332), 33: (654, 326), 34: (598, 324), 12: (996, 314), 8: (999, 268), 50: (434, 265), 36: (912, 246), 37: (866, 243), 38: (814, 240), 35: (759, 238), 39: (656, 233), 40: (608, 229), 41: (555, 226), 42: (506, 223), 51: (437, 194), 10: (1002, 189), 43: (892, 143), 44: (842, 137), 45: (780, 134), 46: (720, 130), 47: (662, 129), 48: (614, 128), 52: (437, 126), 53: (460, 73), 54: (518, 61), 4: (1041, 37), 5: (413, 35)}
-aruco_corners =list(ac.values())
+###################################VARIABLES#####################
+aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
+
+a=0
+x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
+aruco_pos = {}
+shortest_path = []
+angles = []
+image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample2.jpg'
+aruco_corner_dict = detect_aruco_corner_coordinates(image_path, 0)
+
+dir = {-90:"up",
+         0:"right",
+        90:"down",
+       180:"left"}
+image = cv2.imread(image_path)
+aruco_corners =list(aruco_corner_dict.values())
+corners, ids, _ = aruco.detectMarkers(image, aruco_dict)
 wall_lines = [
-    (calc_cen(ac[24], ac[25], 0, 0), calc_cen(ac[27], ac[20], 0, 0)),
-    (calc_cen(ac[42], ac[25], -10, 50), calc_cen(ac[27], ac[33], 0, 0)),
-    (calc_cen(ac[42], ac[25], -10, -50), calc_cen(ac[33], ac[39], 10, 0)),
-    (calc_cen(ac[19], ac[28], 0, 0), calc_cen(ac[29], ac[16], 0, 0)),
-    (calc_cen(ac[30], ac[29], 0, 0), calc_cen(ac[31], ac[28], -30, 0)),
-    (calc_cen(ac[36], ac[30], 0, 0), calc_cen(ac[33], ac[32], 35, -30)),
-    (calc_cen(ac[43], ac[36], 0, 0), calc_cen(ac[48], ac[42], 0, 0)),
-    (calc_cen(ac[48], ac[42], 0, 0), calc_cen(ac[42], ac[51], 0, 0)),
+    (calc_cen(aruco_corner_dict[24], aruco_corner_dict[25], 0, 0), calc_cen(aruco_corner_dict[27], aruco_corner_dict[20], 0, 0)),
+    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, 50), calc_cen(aruco_corner_dict[27], aruco_corner_dict[33], 0, 0)),
+    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, -50), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], 10, 0)),
+    (calc_cen(aruco_corner_dict[19], aruco_corner_dict[28], 0, 0), calc_cen(aruco_corner_dict[29], aruco_corner_dict[16], 0, 0)),
+    (calc_cen(aruco_corner_dict[30], aruco_corner_dict[29], 0, 0), calc_cen(aruco_corner_dict[31], aruco_corner_dict[28], -30, 0)),
+    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[33], aruco_corner_dict[32], 35, -30)),
+    (calc_cen(aruco_corner_dict[43], aruco_corner_dict[36], 0, 0), calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0)),
+    (calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0), calc_cen(aruco_corner_dict[42], aruco_corner_dict[51], 0, 0)),
 ]
 
-aruco_corners.append(calc_cen(ac[52],ac[48],0,0))
-aruco_corners.append(calc_cen(ac[34],ac[49],0,0))
-aruco_corners.append(calc_cen(ac[31],ac[30],0,0))
-aruco_corners.append(calc_cen(ac[28],ac[29],0,0))
-aruco_corners.append(calc_cen(ac[21],ac[23],0,0))
 graph = Graph()
 
 # Add nodes and edges
@@ -143,14 +205,12 @@ for i in range(len(aruco_corners)):
         distance = math.sqrt((aruco_corners[i][0] - aruco_corners[j][0])**2 + (aruco_corners[i][1] - aruco_corners[j][1])**2)
         if distance < 135:  # Adjust this threshold as needed
             graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
-
-# Ensure that the starting node is added to the graph
-start_node = ac[23]
-goal_node = ac[10]
+start_node = aruco_corner_dict[50]
+goal_node = aruco_corner_dict[7]
 if start_node not in graph.nodes:
     graph.add_node(start_node)
 
 shortest_path = astar(graph, start_node, goal_node, wall_lines)
 print("Shortest Path:", shortest_path)
 
-visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
+# visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
