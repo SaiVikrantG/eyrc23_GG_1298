@@ -115,7 +115,7 @@ def identify_features_and_targets(encoded_dataframe):
     features = encoded_dataframe.drop(columns=['LeaveOrNot'])
     target = encoded_dataframe['LeaveOrNot']
 
-    features_and_targets = [features, target]
+    features_and_targets = [features, target]		
 
     ##########################################################
     
