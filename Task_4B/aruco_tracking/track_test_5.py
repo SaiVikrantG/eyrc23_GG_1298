@@ -5,13 +5,14 @@ import csv
 
 # Function to calculate Euclidean distance
 def calculate_distance(marker1, marker2):
-    return np.sqrt((marker2[0] - marker1[0])**2 + (marker2[1] - marker1[1])**2)
+    return np.sqrt((marker2[0] - marker1[0])*2 + (marker2[1] - marker1[1])*2)
 
 # Initialize ArUco dictionary
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
 
-# Open a connection to the camera (assuming camera index 0, you may need to change it based on your setup)
+# Open a connection to the camera (assuming camera index 0, you may need to change iSt based on your setup)
 cap = cv2.VideoCapture(0)
+# cap = cv2.VideoCapture('http://192.168.0.102:4747/mjpegfeed?640x480')
 
 # Example detection loop (adapt based on your actual implementation)
 frame_counter = 0  # Counter to track frames
@@ -77,8 +78,8 @@ def qgis_update(ids):
     except KeyError:
         pass 
 
-'''cv2.namedWindow('Overhead Camera Feed', cv2.WINDOW_NORMAL)
-cv2.resizeWindow('Overhead Camera Feed', 860, 1080)'''
+# cv2.namedWindow('Overhead Camera Feed', cv2.WINDOW_NORMAL)
+# cv2.resizeWindow('Overhead Camera Feed', 860, 1080)
 
 while True:
     # Capture frame from camera
@@ -132,29 +133,18 @@ while True:
                         "position": nearest_marker_position,
                         "distance_to_marker_70": distance_to_nearest_marker
                     })
-                    # req_id.append(int(nearest_marker_id))
 
                     qgis_update(int(nearest_marker_id))
-                    # count += 1
-
-                    # Do something with the real-time information about marker 70 and the nearest ArUco marker
-                    # print(f"Marker 70 at position {marker_70_position}, "
-                    #       f"Nearest ArUco marker is ID {nearest_marker_id} at position {nearest_marker_position} "
-                    #       f"with distance to marker 70: {distance_to_nearest_marker}")
 
     # Draw detected markers on the image (optional)
     cv2.aruco.drawDetectedMarkers(frame, corners, ids)
-
+    cv2.namedWindow('Overhead Camera Feed', cv2.WINDOW_NORMAL)
+    cv2.resizeWindow('Overhead Camera Feed', 860, 1080)
     # Display the frame with detected markers
-    # cv2.imshow("Detected ArUco Markers", frame)
-    cv2.imshow("Overhead Camera Feed", frame1)
-
+    cv2.imshow('Overhead Camera Feed', frame)
 
     # Increment frame counter
     frame_counter += 1
-
-    # Add a delay of 500 milliseconds for computations
-    # time.sleep(0.5)
 
     # Check for key press
     key = cv2.waitKey(1) & 0xFF
@@ -162,19 +152,6 @@ while True:
     # Break the loop if 'q' is pressed
     if key == ord('q'):
         break
-
-# Print the values stored in the nearest_markers_history list
-    # print("\nValues stored in nearest_markers_history:")
-    # for entry in req_id:
-    #     print(entry)
-
-# print(req_id)
-
-
-# Example usage
-
-
-# lat, lon = processed_data_dict[23]
 
 # Release the capture
 cap.release()
