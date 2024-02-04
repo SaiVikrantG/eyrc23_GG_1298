@@ -37,12 +37,19 @@ def detect_aruco_corner_coordinates(image_path, corner_index=0):
     
     return corner_coordinates
 
-###########################BOT DECISION FUNCTIONS########################
 def calc_angle(coord1, coord2):
-    x2,y2 = coord1
-    x1,y1 = coord2
-    # if (x2-x1)!=0 :
-    return np.degrees(np.arctan((y2-y1)/(x2-x1))), (y2-y1), (x2-x1)
+    x2, y2 = coord1
+    x1, y1 = coord2
+    
+    # Check if the difference in x-coordinates is zero
+    if (x2 - x1) != 0:
+        return np.degrees(np.arctan((y2 - y1) / (x2 - x1))), (y2 - y1), (x2 - x1)
+    else:
+        # Handle division by zero, return a large angle
+        return 90.0, (y2 - y1), (x2 - x1)
+
+# Rest of the code...
+
 
 def signal(direction: str):
     if direction=="right":
@@ -72,11 +79,10 @@ class Graph:
         self.edges.setdefault(to_node, []).append(from_node)
         self.distances[(from_node, to_node)] = distance
         self.distances[(to_node, from_node)] = distance
-
 def heuristic(node, goal):
     dx = abs(node[0] - goal[0])
     dy = abs(node[1] - goal[1])
-    return math.sqrt(dx**2 + dy**2)
+    return math.sqrt(dx*2 + dy*2)
 
 def line_intersection(line1, line2):
     # Calculate the direction vectors
@@ -147,6 +153,13 @@ def astar(graph, start, goal, wall_lines):
 
     return path
 
+def calculate_angles(path):
+    angles = []
+    for i in range(len(path) - 1):
+        angle, dy, dx = calc_angle(path[i], path[i + 1])
+        angles.append(angle)
+    return angles
+
 def visualize_points_with_walls(aruco_corners, wall_lines, path=None):
     plt.gca().invert_yaxis()  
     for corner in aruco_corners:
@@ -173,7 +186,7 @@ x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
 aruco_pos = {}
 shortest_path = []
 angles = []
-image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample3.jpg'
+image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample2.jpg'
 aruco_corner_dict = detect_aruco_corner_coordinates(image_path, 0)
 
 dir = {-90:"up",
@@ -182,14 +195,14 @@ dir = {-90:"up",
        180:"left"}
 image = cv2.imread(image_path)
 aruco_corners =list(aruco_corner_dict.values())
-corners, ids, _ = aruco.detectMarkers(image, aruco_dict)
+corners, ids, _ = cv2.aruco.detectMarkers(image, aruco_dict)
 wall_lines = [
     (calc_cen(aruco_corner_dict[24], aruco_corner_dict[25], 0, 0), calc_cen(aruco_corner_dict[27], aruco_corner_dict[20], 0, 0)),
     (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, 50), calc_cen(aruco_corner_dict[27], aruco_corner_dict[33], 0, 0)),
-    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, -90), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], -10, 0)),
+    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, -50), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], 10, 0)),
     (calc_cen(aruco_corner_dict[19], aruco_corner_dict[28], 0, 0), calc_cen(aruco_corner_dict[29], aruco_corner_dict[16], 0, 0)),
     (calc_cen(aruco_corner_dict[30], aruco_corner_dict[29], 0, 0), calc_cen(aruco_corner_dict[31], aruco_corner_dict[28], -30, 0)),
-    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[35], aruco_corner_dict[32], 5, 0)),
+    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[33], aruco_corner_dict[32], 35, -30)),
     (calc_cen(aruco_corner_dict[43], aruco_corner_dict[36], 0, 0), calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0)),
     (calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0), calc_cen(aruco_corner_dict[42], aruco_corner_dict[51], 0, 0)),
 ]
@@ -201,15 +214,47 @@ for aruco in aruco_corners:
     graph.add_node(aruco)
 for i in range(len(aruco_corners)):
     for j in range(i + 1, len(aruco_corners)):
-        distance = math.sqrt((aruco_corners[i][0] - aruco_corners[j][0])**2 + (aruco_corners[i][1] - aruco_corners[j][1])**2)
-        if distance < 220:  # Adjust this threshold as needed
+        distance = math.sqrt((abs(aruco_corners[i][0] - aruco_corners[j][0])*2 + (aruco_corners[i][1] - aruco_corners[j][1])*2))
+        if distance < 135:  # Adjust this threshold as needed
             graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
+
+print(len(aruco_corner_dict))
 start_node = aruco_corner_dict[7]
-goal_node = aruco_corner_dict[29]
+goal_node = aruco_corner_dict[30]
 if start_node not in graph.nodes:
     graph.add_node(start_node)
 
 shortest_path = astar(graph, start_node, goal_node, wall_lines)
 print("Shortest Path:", shortest_path)
+angles = calculate_angles(shortest_path)
+# Existing code...
 
-visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
+# Function to filter points based on angle criteria
+def filter_points_by_angle(points, angles, deviation_range=(-100, -80, 80, 100), flat_range=(-10, 10)):
+    filtered_points = [points[0]]  # Include the first point always
+    for i in range(len(angles)):
+        deviation_condition = not any(dev[0] <= angles[i] <= dev[1] for dev in zip(deviation_range[::2], deviation_range[1::2]))
+        flat_condition = not flat_range[0] <= abs(angles[i]) <= flat_range[1]
+        if deviation_condition and flat_condition:
+            filtered_points.append(points[i])
+    filtered_points.append(points[-1])  # Include the last point
+    return filtered_points
+
+# Filter points based on angle criteria
+filtered_points = filter_points_by_angle(shortest_path, angles)
+
+# Display the filtered points
+print("Filtered Points based on angle criteria:", filtered_points)
+
+# # Display the angles
+# print("Angles between consecutive points in the shortest path:", angles)
+# Calculate angles for the provided filtered points in the shortened path
+filtered_angles = calculate_angles(filtered_points)
+
+# Display the angles for the filtered points
+print("Angles between consecutive points in the filtered path:", filtered_angles)
+
+visualize_points_with_walls(aruco_corners, wall_lines, filtered_points)
+# Existing code...
+
+# Function to calculate angles between consecutive points in the shortest path

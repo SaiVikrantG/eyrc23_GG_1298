@@ -2,10 +2,10 @@ import asyncio
 import websockets
 
 async def connect():
-    uri = "ws://192.168.0.112/ws"
+    uri = "ws://192.168.109.2/ws"
     async with websockets.connect(uri) as websocket:
         print("Connected to ESP32 WebSocket")
-        await websocket.send("Hello ESP32!")
+        await websocket.send("1")
         while True:
             message = await websocket.recv()
             print(f"Received message from ESP32: {message}")

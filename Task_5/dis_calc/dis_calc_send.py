@@ -3,7 +3,9 @@ import cv2.aruco as aruco
 import numpy as np
 import asyncio
 import websockets
-
+####list containing commands
+com_to_send = []
+fil_id_list = []
 # Function to calculate distance between two points
 def calculate_distance(point1, point2):
     return np.sqrt((point2[0] - point1[0])**2 + (point2[1] - point1[1])**2)
@@ -14,11 +16,11 @@ parameters = aruco.DetectorParameters_create()
 #distance threshold
 distance_threshold = 50
 # IDs of the ArUco markers to track
-marker_id1 = 0
+marker_id1 = fil_id_list.pop(0)
 marker_id2 = 1
 
 # WebSocket server address
-server_address = "ws://localhost:8765"
+server_address = "ws://192.168.0.112/ws"
 
 # Flag to indicate if distance is less than a certain amount
 send_flag = False
@@ -31,6 +33,7 @@ async def send_data(websocket, data):
 # Function to handle WebSocket connection
 async def websocket_client():
     async with websockets.connect(server_address) as websocket:
+        await websocket.send("testing ")
         while True:
             # Calculate distance and set send_flag accordingly
             ret, frame = cap.read()
@@ -53,10 +56,12 @@ async def websocket_client():
                     distance = calculate_distance(center_marker1, center_marker2)
 
                     if distance < distance_threshold:  # Adjust the threshold distance as needed
-                        send_flag = True
-                        await send_data(websocket, "Flag: True")
-                    else:
-                        send_flag = False
+                            marker_id1 = fil_id_list.pop(0)
+                            temp = com_to_send.pop(0)
+                            if temp=='right':
+                                await send_data(websocket, "1")
+                            else:
+                                await send_data(websocket, "2")
 
             # Display the frame
             cv2.imshow('Frame', frame)

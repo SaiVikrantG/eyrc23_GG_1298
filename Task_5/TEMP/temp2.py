@@ -4,6 +4,15 @@ import numpy as np
 import heapq
 import math
 import matplotlib.pyplot as plt
+
+###################NEW ONES############################################
+def calculate_angles(path):
+    angles = []
+    for i in range(len(path) - 1):
+        angle, dy, dx = calc_angle(path[i], path[i + 1])
+        angles.append(angle)
+    return angles
+
 #############################CORNER DECTECTION FUNCTION ################
 def detect_aruco_corner_coordinates(image_path, corner_index=0):
     # Load the image
@@ -42,7 +51,10 @@ def calc_angle(coord1, coord2):
     x2,y2 = coord1
     x1,y1 = coord2
     # if (x2-x1)!=0 :
-    return np.degrees(np.arctan((y2-y1)/(x2-x1))), (y2-y1), (x2-x1)
+    print(x2,y2)
+    print(x1,y1)
+    print()
+    return np.degrees(np.arctan((y2-y1)/(x2-x1+1))), (y2-y1), (x2-x1)
 
 def signal(direction: str):
     if direction=="right":
@@ -205,7 +217,7 @@ for i in range(len(aruco_corners)):
         if distance < 220:  # Adjust this threshold as needed
             graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
 start_node = aruco_corner_dict[7]
-goal_node = aruco_corner_dict[29]
+goal_node = aruco_corner_dict[30]
 if start_node not in graph.nodes:
     graph.add_node(start_node)
 
@@ -213,3 +225,35 @@ shortest_path = astar(graph, start_node, goal_node, wall_lines)
 print("Shortest Path:", shortest_path)
 
 visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
+angles = calculate_angles(shortest_path)
+# Existing code...
+
+# Function to filter points based on angle criteria
+def filter_points_by_angle(points, angles, deviation_range=(-100, -80, 80, 100), flat_range=(-10, 10)):
+    filtered_points = [points[0]]  # Include the first point always
+    for i in range(len(angles)):
+        deviation_condition = not any(dev[0] <= angles[i] <= dev[1] for dev in zip(deviation_range[::2], deviation_range[1::2]))
+        flat_condition = not flat_range[0] <= abs(angles[i]) <= flat_range[1]
+        if deviation_condition and flat_condition:
+            filtered_points.append(points[i])
+    filtered_points.append(points[-1])  # Include the last point
+    return filtered_points
+
+# Filter points based on angle criteria
+filtered_points = filter_points_by_angle(shortest_path, angles)
+
+# Display the filtered points
+print("Filtered Points based on angle criteria:", filtered_points)
+
+# # Display the angles
+# print("Angles between consecutive points in the shortest path:", angles)
+# Calculate angles for the provided filtered points in the shortened path
+filtered_angles = calculate_angles(filtered_points)
+
+# Display the angles for the filtered points
+print("Angles between consecutive points in the filtered path:", filtered_angles)
+
+visualize_points_with_walls(aruco_corners, wall_lines, filtered_points)
+# Existing code...
+
+# Function to calculate angles between consecutive points in the shortest path
