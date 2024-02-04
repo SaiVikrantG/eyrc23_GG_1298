@@ -228,7 +228,7 @@ def calc_angle(coord1, coord2):
     x2,y2 = coord1
     x1,y1 = coord2
     # if (x2-x1)!=0 :
-    return np.degrees(np.arctan((y2-y1)/(x2-x1))), (y2-y1), (x2-x1)
+    return np.degrees(np.arctan((y2-y1)/(x2-x1+1))), (y2-y1), (x2-x1)
 
 def angle(p1, p2, p3):
     """
@@ -515,7 +515,7 @@ def classification(img):
         return military_vehicles
 
 def eventReturn(img):
-
+    global detected_list_final
     # View the loaded variable
     # img = map_frame() 
     
@@ -555,7 +555,7 @@ def eventReturn(img):
             # print(int((i-1)/2),points[i][0])
             detected_list[event_list[int((i-1)/2)]] = [cv2.resize(img[y:y + h, x:x + w], (224, 224)),points[i]]
 
-    detected_list.pop('_')
+    detected_list.pop('_',None)
 
     for d,c in detected_list.items():    
         count = 0    
@@ -600,8 +600,11 @@ def eventReturn(img):
 ############################main part ############
 graph = Graph()
 image = map_frame()
-aruco_corner_dict = detect_aruco_corner_coordinates(image, 0)
+# aruco_corner_dict = detect_aruco_corner_coordinates(image, 0)
+aruco_corner_dict={7: (80, 551), 6: (617, 547), 21: (249, 489), 20: (295, 487), 19: (349, 485), 17: (467, 484), 18: (406, 484), 16: (517, 483), 15: (579, 480), 23: (101, 468), 14: (594, 438), 24: (101, 431), 13: (595, 400), 22: (101, 399), 25: (170, 388), 26: (230, 382), 27: (292, 378), 28: (396, 378), 29: (520, 376), 11: (591, 315), 9: (589, 282), 49: (89, 280), 30: (514, 270), 32: (377, 269), 31: (414, 267), 34: (240, 266), 33: (290, 267), 12: (591, 245), 50: (89, 218), 8: (591, 204), 36: (516, 188), 38: (429, 185), 37: (475, 187), 35: (379, 183), 39: (288, 183), 40: (245, 180), 41: (195, 178), 42: (152, 178), 51: (88, 153), 10: (594, 134), 43: (496, 96), 44: (450, 90), 45: (396, 90), 52: (85, 90), 46: (341, 88), 47: (290, 87), 48: (246, 87), 53: (103, 41), 54: (155, 28), 5: (57, 6)}
+
 aruco_corners =list(aruco_corner_dict.values())
+# print(aruco_corner_dict)
 wall_lines = [
     (calc_cen(aruco_corner_dict[24], aruco_corner_dict[25], 0, 0), calc_cen(aruco_corner_dict[27], aruco_corner_dict[20], 0, 0)),
     (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, 50), calc_cen(aruco_corner_dict[27], aruco_corner_dict[33], 0, 0)),
@@ -622,9 +625,12 @@ for i in range(len(aruco_corners)):
         if distance < 200:  # Adjust this threshold as needed
             graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
 start = 7
-aruco_corners.append(event_order.values()[0])
+first_value = tuple(tuple(event_order.values())[0])
+# print(first_value)
+aruco_corners.append(first_value)
+# print(aruco_corners)
 start_node = aruco_corner_dict[start]
-goal_node = event_order.values()[0]
+goal_node =first_value
 if start_node not in graph.nodes:
     graph.add_node(start_node)
 shortest_path = astar(graph, start_node, goal_node, wall_lines)
@@ -642,6 +648,8 @@ for point in shortest_path:
         pass
     else:
         shortest_path.remove(point)
+print(shortest_path)
+visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
 final_angles,orie = calculate_angles(shortest_path)
 dec = decision(orie)
 print(dec)
