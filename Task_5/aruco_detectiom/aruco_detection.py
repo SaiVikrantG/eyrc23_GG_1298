@@ -41,8 +41,8 @@ def detect_aruco_corner_coordinates(image_path, corner_index=0):
         print("No ArUco markers detected.")
 
 # Replace 'your_image.jpg' with the new path to your image
-image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample2.jpg'
-
+# image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample2.jpg'
+image_path = '/home/zero/Documents/active_git_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample5.jpg'
 # Replace 'corner_index' with the index of the corner you dwant to print (0 to 3)
 corner_index = 0
 

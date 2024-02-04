@@ -1,259 +1,206 @@
+##################using this shit##################
 import cv2
 import cv2.aruco as aruco
 import numpy as np
-import heapq
-import math
-import matplotlib.pyplot as plt
+import asyncio
+import websockets
+server_address = "ws://192.168.0.112/ws"
+com_to_send = ['right','right']
+fil_id_list = [51,39]
+# Function to calculate Euclidean distance
+def calculate_distance(marker1, marker2):
+    return np.sqrt((marker2[0] - marker1[0])**2 + (marker2[1] - marker1[1])**2)
 
-###################NEW ONES############################################
-def calculate_angles(path):
-    angles = []
-    for i in range(len(path) - 1):
-        angle, dy, dx = calc_angle(path[i], path[i + 1])
-        angles.append(angle)
-    return angles
-
-#############################CORNER DECTECTION FUNCTION ################
-def detect_aruco_corner_coordinates(image_path, corner_index=0):
-    # Load the image
-    image = cv2.imread(image_path)
-
-    # Convert the image to grayscale
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Define the ArUco dictionary
-    aruco_dict = aruco.getPredefinedDictionary(aruco.DICT_4X4_250)
-
-    # Define parameters for ArUco detection
-    parameters = aruco.DetectorParameters_create()
-
-    # Detect ArUco markers in the image
-    corners, ids, _ = aruco.detectMarkers(gray, aruco_dict, parameters=parameters)
-
-    # Initialize a dictionary to store corner coordinates
-    corner_coordinates = {}
-
-    # Print the coordinates of the specified corner for each detected ArUco marker
-    if ids is not None:
-        for i in range(len(ids)): 
-            if len(corners[i][0]) > corner_index:  # Check if the specified corner exists
-                x, y = corners[i][0][corner_index]
-                corner_coordinates[ids[i][0]] = (int(x), int(y))
-            else:
-                print(f"ArUco ID {ids[i][0]} does not have corner {corner_index+1}.")
-    else:
-        print("No ArUco markers detected.")
-    
-    return corner_coordinates
-
-###########################BOT DECISION FUNCTIONS########################
-def calc_angle(coord1, coord2):
-    x2,y2 = coord1
-    x1,y1 = coord2
-    # if (x2-x1)!=0 :
-    print(x2,y2)
-    print(x1,y1)
-    print()
-    return np.degrees(np.arctan((y2-y1)/(x2-x1+1))), (y2-y1), (x2-x1)
-
-def signal(direction: str):
-    if direction=="right":
-        print("right turn")
-    elif direction=="left":
-        print("left turn")
-    elif direction=="straight":
-        print("straight")
-###########################SHORTEST PATH DUNCTIONS############
-def calc_cen(coord1, coord2, xconstant, yconstant):
-    # Calculate center point
-    center_x = (coord1[0] + coord2[0]) / 2 + xconstant
-    center_y = (coord1[1] + coord2[1]) / 2 + yconstant
-    
-    return (center_x, center_y)
-class Graph:
-    def __init__(self):
-        self.nodes = set()
-        self.edges = {}
-        self.distances = {}
-
-    def add_node(self, value):
-        self.nodes.add(value)
-
-    def add_edge(self, from_node, to_node, distance):
-        self.edges.setdefault(from_node, []).append(to_node)
-        self.edges.setdefault(to_node, []).append(from_node)
-        self.distances[(from_node, to_node)] = distance
-        self.distances[(to_node, from_node)] = distance
-
-def heuristic(node, goal):
-    dx = abs(node[0] - goal[0])
-    dy = abs(node[1] - goal[1])
-    return math.sqrt(dx**2 + dy**2)
-
-def line_intersection(line1, line2):
-    # Calculate the direction vectors
-    p = line1[0]
-    r = (line1[1][0] - line1[0][0], line1[1][1] - line1[0][1])
-    q = line2[0]
-    s = (line2[1][0] - line2[0][0], line2[1][1] - line2[0][1])
-    
-    # Calculate the denominator
-    denominator = r[0]*s[1] - r[1]*s[0]
-
-    # If the denominator is zero, the lines are parallel
-    if denominator == 0:
-        return None
-
-    # Calculate the parameters
-    t = ((q[0] - p[0])*s[1] - (q[1] - p[1])*s[0]) / denominator
-    u = ((q[0] - p[0])*r[1] - (q[1] - p[1])*r[0]) / denominator
-
-    # Check if the intersection point is within the line segments
-    if 0 <= t <= 1 and 0 <= u <= 1:
-        intersection_point = (p[0] + t*r[0], p[1] + t*r[1])
-        return intersection_point
-    else:
-        return None
-
-def astar(graph, start, goal, wall_lines):
-    if start not in graph.nodes:
-        print("Start node not in graph")
-        return []
-
-    frontier = [(0, start)]
-    came_from = {}
-    cost_so_far = {start: 0}
-
-    while frontier:
-        current_cost, current_node = heapq.heappop(frontier)
-
-        if current_node == goal:
-            break
-
-        if current_node not in graph.edges:
-            continue
-
-        for next_node in graph.edges[current_node]:
-            new_cost = cost_so_far[current_node] + graph.distances[(current_node, next_node)]
-
-            # Check for intersection with wall lines
-            intersect_wall = False
-            for wall_line in wall_lines:
-                intersection = line_intersection((current_node, next_node), wall_line)
-                if intersection:
-                    intersect_wall = True
-                    break
-
-            if not intersect_wall and (next_node not in cost_so_far or new_cost < cost_so_far[next_node]):
-                cost_so_far[next_node] = new_cost
-                priority = new_cost + heuristic(next_node, goal)
-                heapq.heappush(frontier, (priority, next_node))
-                came_from[next_node] = current_node
-
-    path = []
-    while current_node != start:
-        path.append(current_node)
-        current_node = came_from[current_node]
-    path.append(start)
-    path.reverse()
-
-    return path
-
-def visualize_points_with_walls(aruco_corners, wall_lines, path=None):
-    plt.gca().invert_yaxis()  
-    for corner in aruco_corners:
-        plt.plot(corner[0], corner[1], 'o', markersize=5, color='red')  
-
-    for line in wall_lines:
-        plt.plot([line[0][0], line[1][0]], [line[0][1], line[1][1]], color='black')
-
-    if path:
-        for i in range(len(path) - 1):
-            plt.plot([path[i][0], path[i + 1][0]], [path[i][1], path[i + 1][1]], color='green')
-
-    plt.xlabel('X')
-    plt.ylabel('Y')
-    plt.title('ArUco Corner Points with Walls')
-    plt.grid(True)
-    plt.show()
-
-###################################VARIABLES#####################
+# Initialize ArUco dictionary
 aruco_dict = cv2.aruco.getPredefinedDictionary(cv2.aruco.DICT_4X4_250)
 
-a=0
-x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
-aruco_pos = {}
-shortest_path = []
-angles = []
-image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample3.jpg'
-aruco_corner_dict = detect_aruco_corner_coordinates(image_path, 0)
+# Open a connection to the camera (assuming camera index 0, you may need to change it based on your setup)
+cap = cv2.VideoCapture(0)
 
-dir = {-90:"up",
-         0:"right",
-        90:"down",
-       180:"left"}
-image = cv2.imread(image_path)
-aruco_corners =list(aruco_corner_dict.values())
-corners, ids, _ = aruco.detectMarkers(image, aruco_dict)
-wall_lines = [
-    (calc_cen(aruco_corner_dict[24], aruco_corner_dict[25], 0, 0), calc_cen(aruco_corner_dict[27], aruco_corner_dict[20], 0, 0)),
-    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, 50), calc_cen(aruco_corner_dict[27], aruco_corner_dict[33], 0, 0)),
-    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, -90), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], -10, 0)),
-    (calc_cen(aruco_corner_dict[19], aruco_corner_dict[28], 0, 0), calc_cen(aruco_corner_dict[29], aruco_corner_dict[16], 0, 0)),
-    (calc_cen(aruco_corner_dict[30], aruco_corner_dict[29], 0, 0), calc_cen(aruco_corner_dict[31], aruco_corner_dict[28], -30, 0)),
-    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[35], aruco_corner_dict[32], 5, 0)),
-    (calc_cen(aruco_corner_dict[43], aruco_corner_dict[36], 0, 0), calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0)),
-    (calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0), calc_cen(aruco_corner_dict[42], aruco_corner_dict[51], 0, 0)),
-]
+# Example detection loop (adapt based on your actual implementation)
+frame_counter = 0  # Counter to track frames
 
-graph = Graph()
+# Variables to store real-time information about marker 100 and the nearest ArUco marker
+marker_100_position = None
+nearest_markers_history = []  # List to store history of nearest markers
+req_id = []
+count = 0
 
-# Add nodes and edges
-for aruco in aruco_corners:
-    graph.add_node(aruco)
-for i in range(len(aruco_corners)):
-    for j in range(i + 1, len(aruco_corners)):
-        distance = math.sqrt((aruco_corners[i][0] - aruco_corners[j][0])**2 + (aruco_corners[i][1] - aruco_corners[j][1])**2)
-        if distance < 220:  # Adjust this threshold as needed
-            graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
-start_node = aruco_corner_dict[7]
-goal_node = aruco_corner_dict[30]
-if start_node not in graph.nodes:
-    graph.add_node(start_node)
+def process_csv(file_path):
+    data_dict = {}
 
-shortest_path = astar(graph, start_node, goal_node, wall_lines)
-print("Shortest Path:", shortest_path)
+    with open(file_path, 'r', encoding='utf-8-sig') as csvfile:
+        reader = csv.DictReader(csvfile)
 
-visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
-angles = calculate_angles(shortest_path)
-# Existing code...
+        for row in reader:
+            try:
+                # Access each attribute by its name and convert to the appropriate data type
+                ar_id = int(row['id'])
+                lat = float(row['lat'])
+                lon = float(row['lon'])
 
-# Function to filter points based on angle criteria
-def filter_points_by_angle(points, angles, deviation_range=(-100, -80, 80, 100), flat_range=(-10, 10)):
-    filtered_points = [points[0]]  # Include the first point always
-    for i in range(len(angles)):
-        deviation_condition = not any(dev[0] <= angles[i] <= dev[1] for dev in zip(deviation_range[::2], deviation_range[1::2]))
-        flat_condition = not flat_range[0] <= abs(angles[i]) <= flat_range[1]
-        if deviation_condition and flat_condition:
-            filtered_points.append(points[i])
-    filtered_points.append(points[-1])  # Include the last point
-    return filtered_points
+                # Create a dictionary for each ID if it doesn't exist
+                if ar_id not in data_dict:
+                    # data_dict[ar_id] = {'lat': lat, 'lon': lon}
+                    data_dict[ar_id] = [lat, lon]
+                else:
+                    # If the ID already exists, you can decide how to handle duplicates
+                    print(f"Warning: Duplicate ID {ar_id}. Skipping.")
 
-# Filter points based on angle criteria
-filtered_points = filter_points_by_angle(shortest_path, angles)
+            except (ValueError, KeyError) as e:
+                print(f"Error processing row: {row}. {e}")
 
-# Display the filtered points
-print("Filtered Points based on angle criteria:", filtered_points)
+    return data_dict
 
-# # Display the angles
-# print("Angles between consecutive points in the shortest path:", angles)
-# Calculate angles for the provided filtered points in the shortened path
-filtered_angles = calculate_angles(filtered_points)
+csv_file_path = 'lat_long.csv'
+processed_data_dict = process_csv(csv_file_path)
 
-# Display the angles for the filtered points
-print("Angles between consecutive points in the filtered path:", filtered_angles)
+def write_csv(loc, csv_name):
 
-visualize_points_with_walls(aruco_corners, wall_lines, filtered_points)
-# Existing code...
+    # open csv (csv_name)
+    # write column names "lat", "lon"
+    # write loc ([lat, lon]) in respective columns
 
-# Function to calculate angles between consecutive points in the shortest path
+    lat,lon = loc 
+    with open(csv_name, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+
+        header = ['lat', 'lon'] 
+        writer.writerow(header)
+
+        data = [lat,lon]  
+        writer.writerow(data)
+
+    
+def qgis_update(ids):
+    try:
+        lat, lon = processed_data_dict[ids]
+        print([ids, lat,lon])
+        coordinate = [float(lat),float(lon)]
+        write_csv(coordinate,"live_data.csv")
+    except KeyError:
+        pass 
+
+'''cv2.namedWindow('Overhead Camera Feed', cv2.WINDOW_NORMAL)
+cv2.resizeWindow('Overhead Camera Feed', 860, 1080)'''
+
+async def websocket_client():
+    async with websockets.connect(server_address) as websocket:
+        print("connected")
+        while fil_id_list:  # Check if fil_id_list is not empty
+            # Calculate distance and set send_flag accordingly
+            ret, frame = cap.read()
+            if not ret:
+                break
+    # Capture frame from camera
+    # ret, frame = cap.read()
+    # frame1 = frame
+            ret1, frame1 = cap.read()
+            # Detect ArUco markers
+            corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict)
+
+            # Check if any markers are detected
+            if ids is not None:
+                nearest_marker_id = None
+                nearest_marker_position = None
+                nearest_marker_distance = float('inf')  # Initialize with infinity
+
+                for i in range(len(ids)):
+                    marker_id = ids[i][0]
+                    marker_corners = corners[i][0]
+
+                    # Assuming each marker is a square, calculate its center
+                    marker_center = np.mean(marker_corners, axis=0).astype(int)
+
+                    # If the detected marker is the moving marker (ID 100), update its position
+                    if marker_id == 100:
+                        marker_100_position = marker_center
+
+                    # Calculate distance to marker 100 if its position is known
+                    if marker_100_position is not None and marker_id != 100:
+                        distance_to_marker_100 = calculate_distance(marker_center, marker_100_position)
+
+                        # Update real-time information about the nearest ArUco marker
+                        if distance_to_marker_100 < nearest_marker_distance:
+                            nearest_marker_id = marker_id
+                            nearest_marker_position = marker_center
+                            nearest_marker_distance = distance_to_marker_100
+
+                # Use the real-time position of marker 100 as its current position
+                current_position = marker_100_position
+
+                # Calculate distance to the nearest marker for marker 100
+                if marker_100_position is not None and nearest_marker_position is not None:
+                    distance_to_nearest_marker = calculate_distance(nearest_marker_position, current_position)
+
+                    # Check if the nearest marker has changed and is not already in the history
+                    if not nearest_markers_history or nearest_marker_id != nearest_markers_history[-1].get("id"):
+                        # Check if the nearest marker is not already in the history list
+                        if nearest_marker_id not in [entry.get("id") for entry in nearest_markers_history]:
+                            # Append the new nearest marker information to the history list
+                            nearest_markers_history.append({
+                                "id": nearest_marker_id,
+                                "position": nearest_marker_position,
+                                "distance_to_marker_100": distance_to_nearest_marker
+                            })
+                            # req_id.append(int(nearest_marker_id))
+
+                            qgis_update(int(nearest_marker_id))
+                            if fil_id_list.pop(0)==nearest_marker_id:
+                                temp = com_to_send.pop(0)
+                                if temp == 'right':
+                                    await websocket.send("1")
+                                    print("Sent: 1")
+                                elif(temp=="left"):
+                                    await websocket.send("2")
+                                    print("Sent: 2")
+                                else:
+                                    await websocket.send("4")
+                                    print("Sent: 4")
+
+                            # count += 1
+
+                            # Do something with the real-time information about marker 100 and the nearest ArUco marker
+                            # print(f"Marker 100 at position {marker_100_position}, "
+                            #       f"Nearest ArUco marker is ID {nearest_marker_id} at position {nearest_marker_position} "
+                            #       f"with distance to marker 100: {distance_to_nearest_marker}")
+
+            # Draw detected markers on the image (optional)
+            cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+
+            # Display the frame with detected markers
+            # cv2.imshow("Detected ArUco Markers", frame)
+            cv2.imshow("Overhead Camera Feed", frame1)
+
+
+            # Increment frame counter
+            frame_counter += 1
+
+            # Add a delay of 500 milliseconds for computations
+            # time.sleep(0.5)
+
+            # Check for key press
+            key = cv2.waitKey(1) & 0xFF
+
+            # Break the loop if 'q' is pressed
+            if key == ord('q'):
+                break
+
+# Print the values stored in the nearest_markers_history list
+    # print("\nValues stored in nearest_markers_history:")
+    # for entry in req_id:
+    #     print(entry)
+
+# print(req_id)
+
+
+# Example usage
+
+
+# lat, lon = processed_data_dict[23]
+
+# Release the capture
+cap.release()
+cv2.destroyAllWindows()
+if __name__ == "__main__":
+    asyncio.run(websocket_client())

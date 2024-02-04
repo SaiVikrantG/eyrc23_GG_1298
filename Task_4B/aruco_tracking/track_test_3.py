@@ -2,7 +2,8 @@ import cv2
 import numpy as np
 import time
 import csv
-
+com_to_send = ['right','right']
+fil_id_list = [51,39]
 # Function to calculate Euclidean distance
 def calculate_distance(marker1, marker2):
     return np.sqrt((marker2[0] - marker1[0])**2 + (marker2[1] - marker1[1])**2)
@@ -135,6 +136,15 @@ while True:
                     # req_id.append(int(nearest_marker_id))
 
                     qgis_update(int(nearest_marker_id))
+                    # if fil_id_list.pop(0)==nearest_marker_id:
+                    #     temp = com_to_send.pop(0)
+                    #     if temp == 'right':
+                    #         await websocket.send("1")
+                    #         print("Sent: 1")
+                    #     else:
+                    #         await websocket.send("2")
+                    #         print("Sent: 2")
+
                     # count += 1
 
                     # Do something with the real-time information about marker 70 and the nearest ArUco marker
