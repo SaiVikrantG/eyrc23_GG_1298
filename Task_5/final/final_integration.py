@@ -11,6 +11,8 @@ import math
 import heapq
 import matplotlib.pyplot as plt
 import csv
+###########################csv file path####################
+csv_file_path = '/home/pradhyumna/hardware_round/eyrc23_GG_1298/Task_5A/task_Integration/lat_long.csv'
 
 #############################################variables##################################
 event_list = ['A','B','D','C','_','E']
@@ -82,6 +84,7 @@ def write_csv(loc, csv_name):
         writer.writerow(data)    
 def qgis_update(ids):
     try:
+        processed_data_dict = process_csv(csv_file_path)
         lat, lon = processed_data_dict[ids]
         print([ids, lat,lon])
         coordinate = [float(lat),float(lon)]
@@ -89,109 +92,79 @@ def qgis_update(ids):
     except KeyError:
         pass 
 ################################################main sync code#######################################
-async def websocket_client():
-    async with websockets.connect(server_address) as websocket:
-        print("connected")
-        while fil_id_list:  # Check if fil_id_list is not empty
-            # Calculate distance and set send_flag accordingly
+def websocket_client():
+    server_address = "ws://192.168.83.2/ws"
+    with websockets.connect(server_address) as websocket:
+        while True:
             ret, frame = cap.read()
             if not ret:
                 break
-    # Capture frame from camera
-    # ret, frame = cap.read()
-    # frame1 = frame
-            ret1, frame1 = cap.read()
-            # Detect ArUco markers
+
             corners, ids, _ = cv2.aruco.detectMarkers(frame, aruco_dict)
 
-            # Check if any markers are detected
             if ids is not None:
                 nearest_marker_id = None
                 nearest_marker_position = None
-                nearest_marker_distance = float('inf')  # Initialize with infinity
+                nearest_marker_distance = float('inf')
 
                 for i in range(len(ids)):
                     marker_id = ids[i][0]
                     marker_corners = corners[i][0]
-
-                    # Assuming each marker is a square, calculate its center
                     marker_center = np.mean(marker_corners, axis=0).astype(int)
 
-                    # If the detected marker is the moving marker (ID 100), update its position
                     if marker_id == 100:
                         marker_100_position = marker_center
 
-                    # Calculate distance to marker 100 if its position is known
                     if marker_100_position is not None and marker_id != 100:
                         distance_to_marker_100 = calculate_distance(marker_center, marker_100_position)
 
-                        # Update real-time information about the nearest ArUco marker
                         if distance_to_marker_100 < nearest_marker_distance:
                             nearest_marker_id = marker_id
                             nearest_marker_position = marker_center
                             nearest_marker_distance = distance_to_marker_100
 
-                # Use the real-time position of marker 100 as its current position
                 current_position = marker_100_position
 
-                # Calculate distance to the nearest marker for marker 100
                 if marker_100_position is not None and nearest_marker_position is not None:
                     distance_to_nearest_marker = calculate_distance(nearest_marker_position, current_position)
 
-                    # Check if the nearest marker has changed and is not already in the history
-                    if not nearest_markers_history or nearest_marker_id != nearest_markers_history[-1].get("id"):
-                        # Check if the nearest marker is not already in the history list
-                        if nearest_marker_id not in [entry.get("id") for entry in nearest_markers_history]:
-                            # Append the new nearest marker information to the history list
-                            nearest_markers_history.append({
-                                "id": nearest_marker_id,
-                                "position": nearest_marker_position,
-                                "distance_to_marker_100": distance_to_nearest_marker
-                            })
-                            # req_id.append(int(nearest_marker_id))
+                    if(distance_to_nearest_marker < 30):
+                        if not nearest_markers_history or nearest_marker_id != nearest_markers_history[-1].get("id"):
+                            if nearest_marker_id not in [entry.get("id") for entry in nearest_markers_history]:
+                                nearest_markers_history.append({
+                                    "id": nearest_marker_id,
+                                    "position": nearest_marker_position,
+                                    "distance_to_marker_100": distance_to_nearest_marker
+                                })
+                                qgis_update(int(nearest_marker_id))
+                                if fil_id_list and fil_id_list[0] == nearest_marker_id:
+                                    temp = com_to_send.pop(0)
+                                    if temp == 'right':
+                                        websocket.send("1")
+                                        print("Sent: 1")
+                                    elif temp == "left":
+                                        websocket.send("2")
+                                        print("Sent: 2")
+                                    else:
+                                        websocket.send("4")
+                                        print("Sent: 4")
+                                    fil_id_list.pop(0)
 
-                            qgis_update(int(nearest_marker_id))
-                            if fil_id_list.pop(0)==nearest_marker_id:
-                                temp = com_to_send.pop(0)
-                                if temp == 'right':
-                                    await websocket.send("1")
-                                    print("Sent: 1")
-                                elif(temp=="left"):
-                                    await websocket.send("2")
-                                    print("Sent: 2")
-                                else:
-                                    await websocket.send("4")
-                                    print("Sent: 4")
-
-                            # count += 1
-
-                            # Do something with the real-time information about marker 100 and the nearest ArUco marker
-                            # print(f"Marker 100 at position {marker_100_position}, "
-                            #       f"Nearest ArUco marker is ID {nearest_marker_id} at position {nearest_marker_position} "
-                            #       f"with distance to marker 100: {distance_to_nearest_marker}")
-
-            # Draw detected markers on the image (optional)
             cv2.aruco.drawDetectedMarkers(frame, corners, ids)
+            cv2.imshow("Overhead Camera Feed", frame)
 
-            # Display the frame with detected markers
-            # cv2.imshow("Detected ArUco Markers", frame)
-            cv2.imshow("Overhead Camera Feed", frame1)
-
-
-            # Increment frame counter
-            frame_counter += 1
-
-            # Add a delay of 500 milliseconds for computations
-            # time.sleep(0.5)
-
-            # Check for key press
             key = cv2.waitKey(1) & 0xFF
 
-            # Break the loop if 'q' is pressed
             if key == ord('q'):
                 break
-    
+def replace_coordinates_with_ids(pixel_coordinates_list, id_coordinates_dict):
+    # Create a reverse mapping from coordinates to IDs for efficient lookup
+    coordinates_to_id = {tuple(coord): id_ for id_, coord in id_coordinates_dict.items()}
 
+    # Replace pixel coordinates with corresponding IDs
+    replaced_ids_list = [coordinates_to_id.get(tuple(coord), None) for coord in pixel_coordinates_list]
+
+    return replaced_ids_list
 #############################CORNER DECTECTION FUNCTION ################
 def detect_aruco_corner_coordinates(image, corner_index=0):
     # Load the image
@@ -651,13 +624,12 @@ shortest_path = astar(graph, start_node, goal_node, wall_lines)
 visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
 angles, orie = calculate_angles(shortest_path)
 filtered_points = filter_points_by_angle(shortest_path, angles)
-filtered_angles,orie = calculate_angles(filtered_points)
+filtered_angles= calculate_angles(filtered_points)
 
 for id in nearby_aruco:
     nearby_points.append(aruco_corner_dict[id])
     # nearby_aruco.pop(len(nearby_aruco)-1)
 # print(shortest_path)
-
 # print(nearby_points)
 for point in shortest_path:
     if(point in nearby_points):
@@ -666,5 +638,13 @@ for point in shortest_path:
         shortest_path.remove(point)
 
 final_angles,orie = calculate_angles(shortest_path)
-dec = decision(orie)
-print(dec)
+com_to_send= decision(orie)
+print(com_to_send)
+fil_id_list =replace_coordinates_with_ids(shortest_path,aruco_corner_dict)
+
+marker_100_position = None
+nearest_markers_history = []  # List to store history of nearest markers
+req_id = []
+count = 0
+websocket_client()
+
