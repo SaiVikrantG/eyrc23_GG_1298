@@ -10,6 +10,7 @@ import tensorflow as tf
 import math
 import heapq
 import matplotlib.pyplot as plt
+import csv
 
 #############################################variables##################################
 event_list = ['A','B','D','C','_','E']
@@ -227,8 +228,10 @@ def detect_aruco_corner_coordinates(image, corner_index=0):
 def calc_angle(coord1, coord2):
     x2,y2 = coord1
     x1,y1 = coord2
-    # if (x2-x1)!=0 :
-    return np.degrees(np.arctan((y2-y1)/(x2-x1+1))), (y2-y1), (x2-x1)
+    if (x2-x1)!=0 :
+        return np.degrees(np.arctan((y2-y1)/(x2-x1))), (y2-y1), (x2-x1)
+    else:
+        return 90.0,(y2-y1), (x2-x1)
 
 def angle(p1, p2, p3):
     """
@@ -433,7 +436,7 @@ def filter_points_by_angle(points, angles, deviation_ranges1=(-80, -100), deviat
     return filtered_points
 ###############################FUNCTION TO GET A FRAME FROM THE VIDEO##############
 def map_frame():
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(2)
     cap.set(cv2.CAP_PROP_FPS, 60)
 
     cap.set(cv2.CAP_PROP_FRAME_WIDTH, 1280)
@@ -453,7 +456,7 @@ def map_frame():
             break
     
     __,frame = cap.read()
-
+    frame = cv2.imread("/home/pradhyumna/hardware_round/eyrc23_GG_1298/Task_5A/task_Integration/output_image.png")
     return frame 
 ##############################FUNCTIONS FOR THE EVENT THING###############
 
@@ -487,7 +490,7 @@ def classification(img):
     tf.keras.layers.Dense(5, activation='softmax')  # Adjust the number of classes as needed
 ])
 
-    model.load_weights('17-01.h5')
+    model.load_weights('C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/final/17-01.h5')
 
     # Resize the input image to 50x50 if needed
     
@@ -586,6 +589,7 @@ def eventReturn(img):
         detected_list_final[d] = [classification(imag),points]
         
     detected_list_final = sort_dict_by_array_order(detected_list_final,prioriy_order) 
+    # print(detected_list_final)
 
     for c,d in detected_list_final.items():
         for i in range(len(d[1])):
@@ -597,11 +601,14 @@ def eventReturn(img):
     return detected_list_final
 
 
-############################main part ############
+############################ main part ############
 graph = Graph()
-image = map_frame()
+# image = map_frame()
+image = cv2.imread('C:/Users/prit4/Downloads/sample.jpg')
 # aruco_corner_dict = detect_aruco_corner_coordinates(image, 0)
-aruco_corner_dict={7: (80, 551), 6: (617, 547), 21: (249, 489), 20: (295, 487), 19: (349, 485), 17: (467, 484), 18: (406, 484), 16: (517, 483), 15: (579, 480), 23: (101, 468), 14: (594, 438), 24: (101, 431), 13: (595, 400), 22: (101, 399), 25: (170, 388), 26: (230, 382), 27: (292, 378), 28: (396, 378), 29: (520, 376), 11: (591, 315), 9: (589, 282), 49: (89, 280), 30: (514, 270), 32: (377, 269), 31: (414, 267), 34: (240, 266), 33: (290, 267), 12: (591, 245), 50: (89, 218), 8: (591, 204), 36: (516, 188), 38: (429, 185), 37: (475, 187), 35: (379, 183), 39: (288, 183), 40: (245, 180), 41: (195, 178), 42: (152, 178), 51: (88, 153), 10: (594, 134), 43: (496, 96), 44: (450, 90), 45: (396, 90), 52: (85, 90), 46: (341, 88), 47: (290, 87), 48: (246, 87), 53: (103, 41), 54: (155, 28), 5: (57, 6)}
+# aruco_corner_dict={7: (80, 551), 6: (617, 547), 21: (249, 489), 20: (295, 487), 19: (349, 485), 17: (467, 484), 18: (406, 484), 16: (517, 483), 15: (579, 480), 23: (101, 468), 14: (594, 438), 24: (101, 431), 13: (595, 400), 22: (101, 399), 25: (170, 388), 26: (230, 382), 27: (292, 378), 28: (396, 378), 29: (520, 376), 11: (591, 315), 9: (589, 282), 49: (89, 280), 30: (514, 270), 32: (377, 269), 31: (414, 267), 34: (240, 266), 33: (290, 267), 12: (591, 245), 50: (89, 218), 8: (591, 204), 36: (516, 188), 38: (429, 185), 37: (475, 187), 35: (379, 183), 39: (288, 183), 40: (245, 180), 41: (195, 178), 42: (152, 178), 51: (88, 153), 10: (594, 134), 43: (496, 96), 44: (450, 90), 45: (396, 90), 52: (85, 90), 46: (341, 88), 47: (290, 87), 48: (246, 87), 53: (103, 41), 54: (155, 28), 5: (57, 6)}
+# aruco_corner_dict = {6: [880.75, 693.75], 7: [235.0, 689.5], 21: [439.0, 617.5], 17: [700.5, 615.5], 16: [761.0, 615.5], 19: [558.5, 615.5], 20: [494.0, 616.25], 18: [627.0, 614.75], 15: [835.5, 612.75], 23: [261.75, 591.0], 14: [853.75, 561.5], 24: [263.5, 547.5], 13: [855.0, 516.0], 22: [262.75, 507.25], 25: [346.25, 495.5], 26: [417.75, 490.0], 28: [616.0, 486.5], 29: [766.0, 486.5], 27: [492.0, 485.0], 11: [852.75, 415.75], 9: [849.25, 375.0], 49: [251.0, 364.75], 30: [759.25, 360.0], 32: [596.0, 357.25], 31: [641.0, 356.0], 33: [492.0, 353.25], 34: [432.0, 351.0], 12: [850.75, 330.75], 36: [762.5, 262.25], 37: [714.25, 260.5], 38: [658.5, 258.0], 35: [600.25, 256.5], 40: [439.0, 249.0], 41: [381.25, 247.0], 51: [253.0, 215.0], 10: [854.5, 199.5], 43: [739.25, 153.0], 44: [686.0, 146.5], 46: [555.25, 141.75], 47: [494.0, 140.0], 52: [251.0, 140.25], 48: [442.5, 139.75], 53: [274.0, 82.25], 4: [893.75, 36.0], 42: [328.25, 245.0], 5: [220.75, 41.0]}
+aruco_corner_dict = {7: (106.75, 456.0), 6: (538.75, 455.0), 21: (244.5, 406.0), 20: (281.5, 405.0), 19: (324.5, 404.0), 16: (459.5, 403.5), 17: (419.25, 403.75), 18: (370.5, 403.5), 15: (508.5, 401.0), 23: (125.5, 389.5), 14: (520.75, 367.0), 24: (126.75, 360.5), 13: (521.75, 336.5), 22: (126.5, 333.5), 25: (182.5, 324.75), 26: (230.5, 320.5), 29: (463.0, 317.25), 28: (363.5, 317.5), 27: (280.5, 317.5), 11: (520.5, 269.5), 9: (518.5, 242.5), 49: (118.5, 238.5), 30: (458.5, 232.5), 32: (349.5, 231.5), 31: (380.0, 230.5), 33: (280.5, 228.5), 34: (240.25, 227.5), 12: (519.5, 213.5), 50: (120.0, 188.5), 8: (521.0, 181.5), 36: (460.5, 167.5), 37: (428.5, 166.5), 38: (391.5, 165.0), 35: (353.0, 164.25), 39: (279.5, 162.5), 40: (245.25, 159.5), 41: (206.5, 159.0), 42: (170.5, 157.5), 51: (119.75, 137.5), 10: (522.0, 125.5), 43: (445.25, 94.75), 44: (410.0, 90.75), 45: (366.0, 89.5), 46: (323.0, 87.5), 52: (118.5, 87.5), 47: (282.0, 86.75), 48: (247.0, 86.5), 53: (133.5, 48.5), 54: (175.25, 38.75), 5: (97.5, 20.5)}
 
 aruco_corners =list(aruco_corner_dict.values())
 # print(aruco_corner_dict)
@@ -616,14 +623,8 @@ wall_lines = [
     (calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0), calc_cen(aruco_corner_dict[42], aruco_corner_dict[51], 0, 0)),
 ]
 event_order = eventReturn(image)
+# print(event_order)
 # Add nodes and edges
-for aruco in aruco_corners:
-    graph.add_node(aruco)
-for i in range(len(aruco_corners)):
-    for j in range(i + 1, len(aruco_corners)):
-        distance = math.sqrt((aruco_corners[i][0] - aruco_corners[j][0])**2 + (aruco_corners[i][1] - aruco_corners[j][1])**2)
-        if distance < 200:  # Adjust this threshold as needed
-            graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
 start = 7
 first_value = tuple(tuple(event_order.values())[0])
 # print(first_value)
@@ -631,9 +632,18 @@ aruco_corners.append(first_value)
 # print(aruco_corners)
 start_node = aruco_corner_dict[start]
 goal_node =first_value
+# print(goal_node)
+for aruco in aruco_corners:
+    graph.add_node(aruco)
+for i in range(len(aruco_corners)):
+    for j in range(i + 1, len(aruco_corners)):
+        distance = math.sqrt((aruco_corners[i][0] - aruco_corners[j][0])**2 + (aruco_corners[i][1] - aruco_corners[j][1])**2)
+        if distance < 120:  # Adjust this threshold as needed
+            graph.add_edge(aruco_corners[i], aruco_corners[j], distance)
 if start_node not in graph.nodes:
     graph.add_node(start_node)
 shortest_path = astar(graph, start_node, goal_node, wall_lines)
+visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
 angles, orie = calculate_angles(shortest_path)
 filtered_points = filter_points_by_angle(shortest_path, angles)
 filtered_angles,orie = calculate_angles(filtered_points)
@@ -641,6 +651,7 @@ filtered_angles,orie = calculate_angles(filtered_points)
 for id in nearby_aruco:
     nearby_points.append(aruco_corner_dict[id])
     # nearby_aruco.pop(len(nearby_aruco)-1)
+# print(shortest_path)
 
 # print(nearby_points)
 for point in shortest_path:
@@ -648,8 +659,7 @@ for point in shortest_path:
         pass
     else:
         shortest_path.remove(point)
-print(shortest_path)
-visualize_points_with_walls(aruco_corners, wall_lines, shortest_path)
+
 final_angles,orie = calculate_angles(shortest_path)
 dec = decision(orie)
 print(dec)
