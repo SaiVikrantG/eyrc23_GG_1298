@@ -168,8 +168,8 @@ x70, y70 = None, None  # Initialize the position of the moving marker with ID 70
 aruco_pos = {}
 shortest_path = []
 angles = []
-# image_path = 'C:/Users/prit4/OneDrive/Desktop/stuff/active_Github_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample3.jpg'
-image_path='/home/zero/Documents/active_git_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample5.jpg'
+image_path = 'C:/Users/prit4/Downloads/sample.jpg'
+# image_path='/home/zero/Documents/active_git_repos/eyrc23_GG_1298/Task_5/aruco_detectiom/sample5.jpg'
 aruco_corner_dict = detect_aruco_corner_coordinates(image_path, 0)
 
 

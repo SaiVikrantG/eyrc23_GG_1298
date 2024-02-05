@@ -615,19 +615,24 @@ aruco_corners =list(aruco_corner_dict.values())
 wall_lines = [
     (calc_cen(aruco_corner_dict[24], aruco_corner_dict[25], 0, 0), calc_cen(aruco_corner_dict[27], aruco_corner_dict[20], 0, 0)),
     (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, 50), calc_cen(aruco_corner_dict[27], aruco_corner_dict[33], 0, 0)),
-    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25], -10, -50), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], 10, 0)),
+    (calc_cen(aruco_corner_dict[42], aruco_corner_dict[25],0, -50), calc_cen(aruco_corner_dict[33], aruco_corner_dict[39], -10, 0)),
     (calc_cen(aruco_corner_dict[19], aruco_corner_dict[28], 0, 0), calc_cen(aruco_corner_dict[29], aruco_corner_dict[16], 0, 0)),
-    (calc_cen(aruco_corner_dict[30], aruco_corner_dict[29], 0, 0), calc_cen(aruco_corner_dict[31], aruco_corner_dict[28], -30, 0)),
-    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[33], aruco_corner_dict[32], 35, -30)),
+    (calc_cen(aruco_corner_dict[30], aruco_corner_dict[29], -10, 0), calc_cen(aruco_corner_dict[31], aruco_corner_dict[28], -30, 0)),
+    (calc_cen(aruco_corner_dict[36], aruco_corner_dict[30], 0, 0), calc_cen(aruco_corner_dict[35], aruco_corner_dict[32], 5, 0)),
     (calc_cen(aruco_corner_dict[43], aruco_corner_dict[36], 0, 0), calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0)),
     (calc_cen(aruco_corner_dict[48], aruco_corner_dict[42], 0, 0), calc_cen(aruco_corner_dict[42], aruco_corner_dict[51], 0, 0)),
 ]
+
 event_order = eventReturn(image)
 # print(event_order)
 # Add nodes and edges
 start = 7
 first_value = tuple(tuple(event_order.values())[0])
 # print(first_value)
+##########################redundant points#################
+# aruco_corners.append(calc_cen(aruco_corner_dict[28], aruco_corner_dict[27], 0, 0))
+# aruco_corners.append(calc_cen(aruco_corner_dict[22], aruco_corner_dict[25], 0, 0))
+###########################the image points################
 aruco_corners.append(first_value)
 # print(aruco_corners)
 start_node = aruco_corner_dict[start]
