@@ -114,13 +114,13 @@ model.compile(
 # Train the model with data augmentation
 history = model.fit(datagen.flow(X_train_scaled, y_train, batch_size=32),
                     steps_per_epoch=len(X_train_scaled) / 32,  # Adjust batch size if needed
-                    epochs=5)
+                    epochs=10)
 
 # Evaluate the model on the test data
 model.evaluate(X_test_scaled, y_test)
 
 # Save model weights
-model.save_weights('my_model_weights_with_augmentation.h5')
+model.save_weights('task4a.h5')
 
 
 

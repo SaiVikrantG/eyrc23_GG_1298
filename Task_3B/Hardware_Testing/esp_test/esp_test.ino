@@ -1,23 +1,23 @@
 #include <WiFi.h>
-
+#include <ArduinoJson.h>
 // WiFi credentials
-const char* ssid = "TPLINK-52";                    //Enter your wifi hotspot ssid
-const char* password =  "aditya20";               //Enter your wifi hotspot password
+const char* ssid = "Nope";                    //Enter your wifi hotspot ssid
+const char* password =  "pi314420";               //Enter your wifi hotspot password
 const uint16_t port = 8002;
-const char * host = "192.168.0.106";                   //Enter the ip address of your laptop after connecting it to wifi hotspot
+const char * host = "192.168.0.102"; 
+                  //Enter the ip address of your laptop after connecting it to wifi hotspot
 
 // External peripherals 
 int buzzerPin = 15;
 int redLed = 2;
-
+StaticJsonDocument<200> jsonDocument;
+DeserializationError error;
+int P=0,I=0,D=0;
 
 char incomingPacket[80];
 WiFiClient client;
 
 String msg = "0";
-int counter = 0;
-
-
 
 void setup(){
    
@@ -55,16 +55,23 @@ void loop() {
 
   while(1){
       msg = client.readStringUntil('\n');         //Read the message through the socket until new line char(\n)
-      client.print("Hello from ESP32!");          //Send an acknowledgement to host(laptop)
-      counter = msg.toInt();
-      Serial.println(counter);                    //Print data on Serial monitor
-      if(counter%2==0){
-        digitalWrite(buzzerPin, LOW);           //If counter value is even turn on Buzzer & LEDs
-        digitalWrite(redLed, HIGH);
+      Serial.println(msg);
+      error = deserializeJson(jsonDocument,msg);
+      if(error)
+      {
+        Serial.print("Failed to parse JSON: ");
+        Serial.println(error.c_str());
+        Serial.println(P);
+        
       }
-      else{
-        digitalWrite(buzzerPin, HIGH);           //Else keep them off
-        digitalWrite(redLed, LOW);       
+      else 
+      {
+        P = jsonDocument["P"];
+        Serial.println(P);
+        I = jsonDocument["I"];
+        Serial.println(I);
+        D = jsonDocument["D"];
+        Serial.println(D);
       }
      
     }

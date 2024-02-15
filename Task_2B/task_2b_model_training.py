@@ -13,25 +13,25 @@ from tensorflow.keras import layers
 from tensorflow.keras.models import Sequential
 import glob
 
-IMAGE_SHAPE = (224, 224)
+IMAGE_SHAPE = (224,224)
 
 classifier = tf.keras.Sequential([
     hub.KerasLayer("https://tfhub.dev/google/tf2-preview/mobilenet_v2/classification/4", input_shape=IMAGE_SHAPE+(3,))
 ])
 
 train_images_dict = {
-    'combat': list(glob.glob('dataset_eyrc/Combat/*jpeg')),
-    'destroyedbuidings': list(glob.glob('dataset_eyrc/DestroyedBuildings/*jpeg')),
-    'fire': list(glob.glob('dataset_eyrc/Fire/*jpeg')),
-    'humaniatrianaid': list(glob.glob('dataset_eyrc/Humanitarian Aid and rehabilitation/*jpeg')),
-    'military': list(glob.glob('dataset_eyrc/Military vehicles and weapons/*jpeg')),
+    'combat': list(glob.glob('training/Combat/*jpeg')),
+    'destroyedbuidings': list(glob.glob('training/DestroyedBuildings/*jpeg')),
+    'fire': list(glob.glob('training/Fire/*jpeg')),
+    'humaniatrianaid': list(glob.glob('training/Humanitarian Aid and rehabilitation/*jpeg')),
+    'military': list(glob.glob('training/Military vehicles and weapons/*jpeg')),
 }
 test_images_dict = {
-    'combat': list(glob.glob('test_dataset_eyrc/Combat/*jpeg')),
-    'destroyedbuidings': list(glob.glob('test_dataset_eyrc/DestroyedBuildings/*jpeg')),
-    'fire': list(glob.glob('test_dataset_eyrc/Fire/*jpeg')),
-    'humaniatrianaid': list(glob.glob('test_dataset_eyrc/Humanitarian Aid and rehabilitation/*jpeg')),
-    'military': list(glob.glob('test_dataset_eyrc/Military vehicles and weapons/*jpeg')),
+    'combat': list(glob.glob('test/Combat/*jpeg')),
+    'destroyedbuidings': list(glob.glob('test/DestroyedBuildings/*jpeg')),
+    'fire': list(glob.glob('test/Fire/*jpeg')),
+    'humaniatrianaid': list(glob.glob('test/Humanitarian Aid and rehabilitation/*jpeg')),
+    'military': list(glob.glob('test/Military vehicles and weapons/*jpeg')),
 }
 
 
@@ -69,10 +69,10 @@ y_test = np.array(y_test)
 X_train_scaled = x_train / 255
 X_test_scaled = x_test / 255
 
-feature_extractor_model = "https://tfhub.dev/google/tf2-preview/mobilenet_v2/feature_vector/4"
+feature_extractor_model = "https://tfhub.dev/google/imagenet/mobilenet_v3_large_100_224/classification/5"
 
 pretrained_model_without_top_layer = hub.KerasLayer(
-feature_extractor_model, input_shape=(224, 224, 3), trainable=False)
+feature_extractor_model, input_shape=(224,224, 3), trainable=False)
 number_of_classes = 5
 
 model = tf.keras.Sequential([
@@ -89,7 +89,7 @@ model.compile(
 model.fit(X_train_scaled, y_train, epochs=5)
 
 model.evaluate(X_test_scaled,y_test)
-model.save_weights('my_model_weights.h5')
+model.save_weights('my_model_weights1.h5')
 
 
 

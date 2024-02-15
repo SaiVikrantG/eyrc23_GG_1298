@@ -1,38 +1,43 @@
 import socket
-from time import sleep
-import signal		
-import sys		
+import tkinter as tk
+from tkinter import Scale
+import json
 
-def signal_handler(sig, frame):
-    print('Clean-up !')
-    cleanup()
-    sys.exit(0)
+def send_values():
+    # Get the values from sliders and send them through the socket
+    p_value = p_slider.get()
+    i_value = i_slider.get()
+    d_value = d_slider.get()
+    message = {'P':int(p_value), 'I':int(i_value), 'D':int(d_value)}
+    print(type(message))
+    json_str = json.dumps(message)
+    conn.sendall(json_str.encode())
 
-def cleanup():
-    s.close()
-    print("cleanup done")
+# Create a tkinter window
+root = tk.Tk()
+root.title("PID Values Sender")
 
-ip = "192.168.0.106"     #Enter IP address of laptop after connecting it to WIFI hotspot
+# Create three sliders for P, I, and D values
+p_slider = Scale(root, label="P Value", from_=0, to=100, orient="horizontal")
+p_slider.pack()
+i_slider = Scale(root, label="I Value", from_=0, to=100, orient="horizontal")
+i_slider.pack()
+d_slider = Scale(root, label="D Value", from_=0, to=100, orient="horizontal")
+d_slider.pack()
 
+# Button to send values
+send_button = tk.Button(root, text="Send Values", command=send_values)
+send_button.pack()
 
-#We will be sending a simple counter which counts from 1 to 10 and then closes the socket
-counter = 1
+# Socket communication code (to be implemented according to your needs)
+ip = "192.168.0.102"  # Enter IP address
+port = 8002
 
-#To undeerstand the working of the code, visit https://docs.python.org/3/library/socket.html
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
     s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
-    s.bind((ip, 8002))
+    s.bind((ip, port))
     s.listen()
     conn, addr = s.accept()
     with conn:
         print(f"Connected by {addr}")
-        while True:
-            data = conn.recv(1024)
-            print(counter)
-            print(data)
-            conn.sendall(str.encode(str(counter)))
-            counter += 1
-            sleep(1)
-            if counter == 10:
-                s.close()
-                break
+        root.mainloop()  # Start the tkinter main loop
