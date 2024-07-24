@@ -22,7 +22,3 @@ This project is a path planning bot that autonomously navigates to identified po
 - WebSockets
 - FreeRTOS (for ESP32 microcontroller)
 
-## Video Links:
-- https://youtu.be/8p_HU9iWIUY
-- https://youtu.be/qfPz8XKs-Sc
-- https://youtu.be/ApChN8-o8h4
