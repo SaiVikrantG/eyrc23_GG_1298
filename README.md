@@ -1,4 +1,4 @@
-# Geoguide
+# Geoguide - Team 1298
 # Path Planning Bot
 
 
